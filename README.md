@@ -239,67 +239,84 @@ local function updateAttackNames()
 end
 
 local function createBlackFlashNotification()
-    local ts = game:GetService("TweenService")
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then return end
+    local screenGui = playerGui:FindFirstChild("BlackFlashNotifications")
+    if not screenGui then
+        screenGui = Instance.new("ScreenGui")
+        screenGui.Name = "BlackFlashNotifications"
+        screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        screenGui.Parent = playerGui
+    end
+    
+    local frame = screenGui:FindFirstChild("Frame")
+    if not frame then
+        frame = Instance.new("Frame")
+        frame.Name = "Frame"
+        frame.Size = UDim2.new(0.3, 0, 0.8, 0)
+        frame.Position = UDim2.new(0.35, 0, 0.1, 0)
+        frame.BackgroundTransparency = 1
+        frame.Parent = screenGui
+        
+        local listLayout = Instance.new("UIListLayout")
+        listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        listLayout.Padding = UDim.new(0, 5)
+        listLayout.Parent = frame
+    end
     
     local sound = Instance.new("Sound")
     sound.SoundId = "rbxassetid://9086333748"
     sound.Volume = 0.5
-    sound.Parent = humanoidRootPart
+    sound.Parent = frame
     sound:Play()
     game.Debris:AddItem(sound, 2)
     
-    local Dialogue = Instance.new("BillboardGui")
-    local Chat1 = Instance.new("ImageLabel")
-    local Sub = Instance.new("TextLabel")
+    local message = Instance.new("TextLabel")
+    message.Text = "BLACK FLASH"
+    message.Font = Enum.Font.GothamBold
+    message.TextSize = 24
+    message.TextColor3 = Color3.fromRGB(255, 255, 255)
+    message.TextStrokeTransparency = 0.5
+    message.TextStrokeColor3 = Color3.fromRGB(255, 0, 0)
+    message.BackgroundTransparency = 1
+    message.BorderSizePixel = 0
+    message.Size = UDim2.new(1, 0, 0, 40)
+    message.TextScaled = false
+    message.Parent = frame
     
-    Dialogue.Active = true
-    Dialogue.Size = UDim2.new(15, 0, 15, 0)
-    Dialogue.StudsOffset = Vector3.new(0, 0, 2)
-    Dialogue.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    Dialogue.Name = "Dialogue"
-    Dialogue.Parent = humanoidRootPart
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(255, 0, 0)
+    stroke.Thickness = 2
+    stroke.Transparency = 0
+    stroke.Parent = message
     
-    Chat1.AnchorPoint = Vector2.new(0.5, 0.5)
-    Chat1.Image = "rbxassetid://136797177442983"
-    Chat1.BackgroundTransparency = 1
-    Chat1.Position = UDim2.new(0.6, 0, -0.2, 0)
-    Chat1.Size = UDim2.new(0.1, 0, 0.2, 0)
-    Chat1.Name = "Chat1"
-    Chat1.ImageTransparency = 1
-    Chat1.Parent = Dialogue
+    local origSize = message.TextSize
+    message.TextSize = 0
     
-    Sub.FontFace = Font.new("rbxassetid://12187375716", Enum.FontWeight.Bold, Enum.FontStyle.Italic)
-    Sub.Text = "BLACK FLASH"
-    Sub.TextColor3 = Color3.new(0, 0, 0)
-    Sub.TextScaled = true
-    Sub.TextSize = 14
-    Sub.TextWrapped = true
-    Sub.AnchorPoint = Vector2.new(0.5, 0.5)
-    Sub.BackgroundTransparency = 1
-    Sub.TextTransparency = 1
-    Sub.BorderSizePixel = 0
-    Sub.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Sub.Size = UDim2.new(0.85, 0, 0.35, 0)
-    Sub.Name = "Sub"
-    Sub.Parent = Chat1
+    local tweenIn = game:GetService("TweenService"):Create(
+        message,
+        TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {TextSize = origSize}
+    )
+    tweenIn:Play()
     
-    game.Debris:AddItem(Dialogue, 6)
+    local pulseTween = game:GetService("TweenService"):Create(
+        stroke,
+        TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+        {Transparency = 0.5}
+    )
+    pulseTween:Play()
     
-    local function tweenProperty(object, properties, time)
-        local tweenInfo = TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        local tween = ts:Create(object, tweenInfo, properties)
-        tween:Play()
-        return tween
-    end
+    task.wait(2)
     
-    tweenProperty(Chat1, {ImageTransparency = 0}, 1)
-    tweenProperty(Sub, {TextTransparency = 0}, 1)
-    tweenProperty(Chat1, {Position = UDim2.new(0.6, 0, 0.4, 0)}, 1)
-    task.wait(4)
-    tweenProperty(Chat1, {ImageTransparency = 1}, 2)
-    tweenProperty(Sub, {TextTransparency = 1}, 2)
+    pulseTween:Cancel()
+    
+    local tweenOut = game:GetService("TweenService"):Create(
+        message,
+        TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+        {TextSize = 0}
+    )
+    tweenOut:Play()
+    
+    game:GetService("Debris"):AddItem(message, 0.3)
 end
 
 local function setupAnimationReplacement(originalId, config)
