@@ -1,6 +1,6 @@
 local ANIMATION_REPLACEMENTS = {
     [10468665991] = {
-        skillName = "SOCO NORMAL",
+        skillName = "NORMAL PUNCH",
         animationId = 17186602996,
         speed = 1,
         timePos = 0,
@@ -11,7 +11,7 @@ local ANIMATION_REPLACEMENTS = {
     },
     
     [10466974800] = {
-        skillName = "SOCOS CONSECUTIVOS",
+        skillName = "CONSECUTIVE PUNCHES",
         animationId = 13560306510,
         speed = 3,
         timePos = 0,
@@ -22,7 +22,7 @@ local ANIMATION_REPLACEMENTS = {
     },
     
     [10471336737] = {
-        skillName = "EMPURRÃO",
+        skillName = "SHOVE",
         animationId = 18179181663,
         speed = 1,
         timePos = 0,
@@ -100,27 +100,27 @@ local ANIMATION_REPLACEMENTS = {
 
 local FULL_REPLACEMENT_ANIMATIONS = {
     [17859015788] = {
-        skillName = "SUBSTITUIÇÃO COMPLETA 1",
+        skillName = "FULL REPLACEMENT 1",
         animationId = 12684185971,
         speed = 1
     },
     [10469493270] = {
-        skillName = "SUBSTITUIÇÃO COMPLETA 2",
+        skillName = "FULL REPLACEMENT 2",
         animationId = 13491635433,
         speed = 1
     },
     [10469630950] = {
-        skillName = "SUBSTITUIÇÃO COMPLETA 3",
+        skillName = "FULL REPLACEMENT 3",
         animationId = 13532600125,
         speed = 1
     },
     [10469639222] = {
-        skillName = "SUBSTITUIÇÃO COMPLETA 4",
+        skillName = "FULL REPLACEMENT 4",
         animationId = 104895379416342,
         speed = 1
     },
     [10469643643] = {
-        skillName = "SUBSTITUIÇÃO COMPLETA 5",
+        skillName = "FULL REPLACEMENT 5",
         animationId = 18181348446,
         speed = 1
     }
@@ -487,4 +487,4 @@ player.CharacterAdded:Connect(function(newCharacter)
     for _, descendant in pairs(character:GetDescendants()) do 
         onBodyVelocityAdded(descendant) 
     end
-end)# Yuji-Itadori
+end)
