@@ -34,7 +34,7 @@ local ANIMATION_REPLACEMENTS = {
     
     [10470104242] = {
         skillName = "UPPERCUT",
-        animationId = 17858997926,
+        animationId = 18179181663,
         speed = 1.1,
         timePos = 0,
         soundId = nil,
