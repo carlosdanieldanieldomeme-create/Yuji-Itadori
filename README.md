@@ -251,7 +251,7 @@ local function createBlackFlashNotification()
     game.Debris:AddItem(sound, 2)
     
     local Dialogue = Instance.new("BillboardGui")
-    local Chat1 = Instance.new("Frame")
+    local Chat1 = Instance.new("ImageLabel")
     local Sub = Instance.new("TextLabel")
     
     Dialogue.Active = true
@@ -262,13 +262,12 @@ local function createBlackFlashNotification()
     Dialogue.Parent = humanoidRootPart
     
     Chat1.AnchorPoint = Vector2.new(0.5, 0.5)
-    Chat1.BackgroundColor3 = Color3.new(1, 1, 1)
-    Chat1.BorderColor3 = Color3.new(0, 0, 0)
-    Chat1.BorderSizePixel = 2
+    Chat1.Image = "rbxassetid://136797177442983"
+    Chat1.BackgroundTransparency = 1
     Chat1.Position = UDim2.new(0.6, 0, -0.2, 0)
     Chat1.Size = UDim2.new(0.1, 0, 0.2, 0)
     Chat1.Name = "Chat1"
-    Chat1.BackgroundTransparency = 1
+    Chat1.ImageTransparency = 1
     Chat1.Parent = Dialogue
     
     Sub.FontFace = Font.new("rbxassetid://12187375716", Enum.FontWeight.Bold, Enum.FontStyle.Italic)
@@ -278,9 +277,8 @@ local function createBlackFlashNotification()
     Sub.TextSize = 14
     Sub.TextWrapped = true
     Sub.AnchorPoint = Vector2.new(0.5, 0.5)
-    Sub.BackgroundColor3 = Color3.new(1, 1, 1)
+    Sub.BackgroundTransparency = 1
     Sub.TextTransparency = 1
-    Sub.BorderColor3 = Color3.new(0, 0, 0)
     Sub.BorderSizePixel = 0
     Sub.Position = UDim2.new(0.5, 0, 0.5, 0)
     Sub.Size = UDim2.new(0.85, 0, 0.35, 0)
@@ -296,11 +294,11 @@ local function createBlackFlashNotification()
         return tween
     end
     
-    tweenProperty(Chat1, {BackgroundTransparency = 0}, 1)
+    tweenProperty(Chat1, {ImageTransparency = 0}, 1)
     tweenProperty(Sub, {TextTransparency = 0}, 1)
     tweenProperty(Chat1, {Position = UDim2.new(0.6, 0, 0.4, 0)}, 1)
     task.wait(4)
-    tweenProperty(Chat1, {BackgroundTransparency = 1}, 2)
+    tweenProperty(Chat1, {ImageTransparency = 1}, 2)
     tweenProperty(Sub, {TextTransparency = 1}, 2)
 end
 
