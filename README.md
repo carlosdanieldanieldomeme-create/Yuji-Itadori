@@ -45,7 +45,7 @@ local ANIMATION_REPLACEMENTS = {
     
     [12510170988] = {
         skillName = "SKILL 5",
-        animationId = 18897119503,
+        animationId = 18179181663,
         speed = 1
     },
     
