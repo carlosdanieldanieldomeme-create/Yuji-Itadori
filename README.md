@@ -27,7 +27,9 @@ local CONFIG = {
             timePos = 0,
             useFOV = false,
             useRedLight = false,
-            useBlackFlashText = false
+            useBlackFlashText = false,
+            useAdvancedHandFire = true,
+            handFireDuration = 2
         },
         [10471336737] = {
             skillName = "SHOVE",
@@ -299,6 +301,176 @@ end
 
 local VFXManager = {}
 
+function VFXManager.createAdvancedEnergyEffect(hand, scale)
+    if not hand then return nil end
+    local attachment = Instance.new("Attachment")
+    attachment.Name = "EnergyAttachment"
+    attachment.Position = Vector3.new(0, -0.5, 0)
+    attachment.Parent = hand
+    local effects = {}
+    scale = scale or 1
+    local darkFire = Instance.new("ParticleEmitter")
+    darkFire.Name = "DarkFire"
+    darkFire.Parent = attachment
+    darkFire.Texture = "rbxassetid://11534281007"
+    darkFire.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, CONFIG.COLORS.dark), ColorSequenceKeypoint.new(0.7, CONFIG.COLORS.dark), ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)})
+    darkFire.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 1 * scale), NumberSequenceKeypoint.new(0.3, 2.5 * scale), NumberSequenceKeypoint.new(0.7, 2 * scale), NumberSequenceKeypoint.new(1, 0.5 * scale)})
+    darkFire.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(0.4, 0.5), NumberSequenceKeypoint.new(0.8, 0.8), NumberSequenceKeypoint.new(1, 1)})
+    darkFire.Lifetime = NumberRange.new(0.6, 1)
+    darkFire.Rate = 80 * scale
+    darkFire.Speed = NumberRange.new(1, 2.5)
+    darkFire.SpreadAngle = Vector2.new(25, 25)
+    darkFire.Rotation = NumberRange.new(0, 360)
+    darkFire.RotSpeed = NumberRange.new(-80, 80)
+    darkFire.LightEmission = 0
+    darkFire.ZOffset = -0.1
+    darkFire.Acceleration = Vector3.new(0, 2, 0)
+    darkFire.Drag = 3
+    darkFire.VelocityInheritance = 0
+    darkFire.LockedToPart = true
+    darkFire.TimeScale = 1
+    darkFire.EmissionDirection = Enum.NormalId.Top
+    darkFire.WindAffectsDrag = false
+    darkFire.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
+    darkFire.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
+    darkFire.FlipbookStartRandom = false
+    darkFire.Enabled = true
+    table.insert(effects, darkFire)
+    local core = Instance.new("ParticleEmitter")
+    core.Name = "EnergyCore"
+    core.Parent = attachment
+    core.Texture = "rbxassetid://11534281007"
+    core.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, CONFIG.COLORS.bright), ColorSequenceKeypoint.new(0.3, CONFIG.COLORS.glow), ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)})
+    core.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.5 * scale), NumberSequenceKeypoint.new(0.2, 1.5 * scale), NumberSequenceKeypoint.new(0.6, 1.2 * scale), NumberSequenceKeypoint.new(1, 0.3 * scale)})
+    core.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.3, 0.1), NumberSequenceKeypoint.new(0.7, 0.5), NumberSequenceKeypoint.new(1, 1)})
+    core.Lifetime = NumberRange.new(0.4, 0.7)
+    core.Rate = 120 * scale
+    core.Speed = NumberRange.new(2, 4)
+    core.SpreadAngle = Vector2.new(15, 15)
+    core.Rotation = NumberRange.new(0, 360)
+    core.RotSpeed = NumberRange.new(-80, 80)
+    core.LightEmission = 1
+    core.LightInfluence = 0
+    core.ZOffset = 0.3
+    core.Acceleration = Vector3.new(0, 3, 0)
+    core.Drag = 2.5
+    core.VelocityInheritance = 0
+    core.LockedToPart = true
+    core.TimeScale = 1
+    core.WindAffectsDrag = false
+    core.EmissionDirection = Enum.NormalId.Top
+    core.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
+    core.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
+    core.FlipbookStartRandom = false
+    core.Enabled = true
+    table.insert(effects, core)
+    local outer = Instance.new("ParticleEmitter")
+    outer.Name = "EnergyOuter"
+    outer.Parent = attachment
+    outer.Texture = "rbxassetid://11534281007"
+    outer.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, CONFIG.COLORS.primary), ColorSequenceKeypoint.new(0.5, CONFIG.COLORS.secondary), ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)})
+    outer.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.8 * scale), NumberSequenceKeypoint.new(0.3, 2 * scale), NumberSequenceKeypoint.new(0.7, 1.5 * scale), NumberSequenceKeypoint.new(1, 0)})
+    outer.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(0.4, 0.3), NumberSequenceKeypoint.new(0.8, 0.7), NumberSequenceKeypoint.new(1, 1)})
+    outer.Lifetime = NumberRange.new(0.5, 0.9)
+    outer.Rate = 100 * scale
+    outer.Speed = NumberRange.new(1.5, 3)
+    outer.SpreadAngle = Vector2.new(20, 20)
+    outer.Rotation = NumberRange.new(0, 360)
+    outer.RotSpeed = NumberRange.new(-100, 100)
+    outer.LightEmission = 0.9
+    outer.ZOffset = 0.2
+    outer.Acceleration = Vector3.new(0, 2.5, 0)
+    outer.Drag = 2
+    outer.VelocityInheritance = 0
+    outer.LockedToPart = true
+    outer.TimeScale = 1
+    outer.EmissionDirection = Enum.NormalId.Top
+    outer.WindAffectsDrag = false
+    outer.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
+    outer.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
+    outer.FlipbookStartRandom = false
+    outer.Enabled = true
+    table.insert(effects, outer)
+    local baseGlow = Instance.new("ParticleEmitter")
+    baseGlow.Name = "BaseGlow"
+    baseGlow.Parent = attachment
+    baseGlow.Texture = "rbxassetid://11841348746"
+    baseGlow.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, CONFIG.COLORS.bright), ColorSequenceKeypoint.new(0.5, CONFIG.COLORS.glow), ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)})
+    baseGlow.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 1.2 * scale), NumberSequenceKeypoint.new(0.4, 1.8 * scale), NumberSequenceKeypoint.new(1, 0)})
+    baseGlow.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(0.5, 0.6), NumberSequenceKeypoint.new(1, 1)})
+    baseGlow.Lifetime = NumberRange.new(0.2, 0.4)
+    baseGlow.Rate = 80 * scale
+    baseGlow.Speed = NumberRange.new(0.5, 1.5)
+    baseGlow.SpreadAngle = Vector2.new(25, 25)
+    baseGlow.Rotation = NumberRange.new(0, 360)
+    baseGlow.RotSpeed = NumberRange.new(-150, 150)
+    baseGlow.LightEmission = 1
+    baseGlow.ZOffset = 0.1
+    baseGlow.Acceleration = Vector3.new(0, 2, 0)
+    baseGlow.Drag = 1
+    baseGlow.VelocityInheritance = 0
+    baseGlow.LockedToPart = true
+    baseGlow.TimeScale = 1
+    baseGlow.EmissionDirection = Enum.NormalId.Top
+    baseGlow.WindAffectsDrag = false
+    baseGlow.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
+    baseGlow.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
+    baseGlow.FlipbookStartRandom = false
+    baseGlow.Enabled = true
+    table.insert(effects, baseGlow)
+    local wisps = Instance.new("ParticleEmitter")
+    wisps.Name = "EnergyWisps"
+    wisps.Parent = attachment
+    wisps.Texture = "rbxassetid://11841348746"
+    wisps.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, CONFIG.COLORS.glow), ColorSequenceKeypoint.new(1, CONFIG.COLORS.secondary)})
+    wisps.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.3 * scale), NumberSequenceKeypoint.new(0.5, 0.6 * scale), NumberSequenceKeypoint.new(1, 0.2 * scale)})
+    wisps.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(0.6, 0.6), NumberSequenceKeypoint.new(1, 1)})
+    wisps.Lifetime = NumberRange.new(0.6, 1)
+    wisps.Rate = 60 * scale
+    wisps.Speed = NumberRange.new(3, 5)
+    wisps.SpreadAngle = Vector2.new(12, 12)
+    wisps.Rotation = NumberRange.new(0, 360)
+    wisps.RotSpeed = NumberRange.new(-200, 200)
+    wisps.LightEmission = 1
+    wisps.ZOffset = 0.4
+    wisps.Acceleration = Vector3.new(0, 4, 0)
+    wisps.Drag = 1.8
+    wisps.VelocityInheritance = 0
+    wisps.LockedToPart = true
+    wisps.TimeScale = 1
+    wisps.EmissionDirection = Enum.NormalId.Top
+    wisps.WindAffectsDrag = false
+    wisps.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
+    wisps.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
+    wisps.FlipbookStartRandom = false
+    wisps.Enabled = true
+    table.insert(effects, wisps)
+    return {attachment = attachment, effects = effects}
+end
+
+function VFXManager.createAdvancedHandFire(duration)
+    pcall(function()
+        local leftHand = PlayerData.character:FindFirstChild("Left Arm") or PlayerData.character:FindFirstChild("LeftHand") or PlayerData.character:FindFirstChild("LeftLowerArm")
+        local rightHand = PlayerData.character:FindFirstChild("Right Arm") or PlayerData.character:FindFirstChild("RightHand") or PlayerData.character:FindFirstChild("RightLowerArm")
+        local effectGroups = {}
+        if leftHand then
+            effectGroups.left = VFXManager.createAdvancedEnergyEffect(leftHand, 0.8)
+        end
+        if rightHand then
+            effectGroups.right = VFXManager.createAdvancedEnergyEffect(rightHand, 0.8)
+        end
+        task.wait(duration)
+        for _, group in pairs(effectGroups) do
+            if group then
+                for _, effect in pairs(group.effects) do
+                    if effect then effect:Destroy() end
+                end
+                if group.attachment then group.attachment:Destroy() end
+            end
+        end
+    end)
+end
+
 function VFXManager.createBlackFlash(parent, duration)
     pcall(function()
         local attachment = Instance.new("Attachment")
@@ -433,6 +605,11 @@ function AnimationManager.setupReplacement(originalId, config)
             AnimationManager.playAnimation(config.animationId, config.speed, config.timePos)
             if config.soundId then
                 SoundManager.playSound(config.soundId, 1)
+            end
+            if config.useAdvancedHandFire then
+                task.spawn(function()
+                    VFXManager.createAdvancedHandFire(config.handFireDuration or 2)
+                end)
             end
             if config.useAttackVFX and config.vfxType then
                 task.spawn(function()
