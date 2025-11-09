@@ -307,6 +307,112 @@ end
 
 local VFXManager = {}
 
+-- Cole este código DEPOIS da linha 'local VFXManager = {}' e ANTES da função 'VFXManager.createAdvancedEnergyEffect'
+
+-- ==================== SISTEMA DE DEBUG ====================
+local DEBUG_MODE = true -- Mude para false para desativar logs
+
+local function debugLog(message, data)
+    if not DEBUG_MODE then return end
+    print("[VFX DEBUG]", message)
+    if data then
+        print("  Data:", data)
+    end
+end
+
+local function debugPrintChildren(parent, depth)
+    if not DEBUG_MODE or not parent then return end
+    local indent = string.rep("  ", depth or 0)
+    for _, child in ipairs(parent:GetChildren()) do
+        print(indent .. "- " .. child.Name .. " (" .. child.ClassName .. ")")
+    end
+end
+
+-- Função para explorar estrutura de clones thrown
+local function exploreThrownStructure()
+    debugLog("=== EXPLORANDO ESTRUTURA THROWN ===")
+    
+    -- Procura em workspace
+    local thrown = workspace:FindFirstChild("Thrown")
+    if thrown then
+        debugLog("✓ Encontrado workspace.Thrown")
+        debugPrintChildren(thrown, 1)
+        
+        for _, model in ipairs(thrown:GetChildren()) do
+            if model:IsA("Model") then
+                debugLog("  Modelo encontrado: " .. model.Name)
+                debugPrintChildren(model, 2)
+            end
+        end
+    else
+        debugLog("✗ workspace.Thrown NÃO encontrado")
+        debugLog("Procurando alternativas em workspace:")
+        
+        -- Lista os principais folders do workspace
+        for _, child in ipairs(workspace:GetChildren()) do
+            if child:IsA("Folder") or child:IsA("Model") then
+                print("  - " .. child.Name .. " (" .. child.ClassName .. ")")
+            end
+        end
+    end
+end
+
+-- Adicione esta função pública ao VFXManager (coloque depois das outras funções do VFXManager)
+function VFXManager.debugExploreStructure()
+    debugLog("=== EXPLORANDO TODA A ESTRUTURA ===")
+    exploreThrownStructure()
+    
+    debugLog("\n=== EXPLORANDO CHARACTER ===")
+    if PlayerData and PlayerData.character then
+        debugLog("Character encontrado: " .. PlayerData.character.Name)
+        debugPrintChildren(PlayerData.character, 1)
+        
+        -- Verifica especificamente o Barrage
+        local barrage = PlayerData.character:FindFirstChild("Barrage")
+        if barrage then
+            debugLog("✓ Barrage encontrado no character")
+        else
+            debugLog("✗ Barrage NÃO encontrado no character")
+        end
+    else
+        debugLog("✗ PlayerData.character não encontrado")
+    end
+    
+    debugLog("\n=== EXPLORANDO REPLICATEDSTORAGE ===")
+    if Services.ReplicatedStorage then
+        debugLog("ReplicatedStorage encontrado")
+        debugPrintChildren(Services.ReplicatedStorage, 1)
+        
+        -- Explora o caminho dos clones finisher
+        local resources = Services.ReplicatedStorage:FindFirstChild("Resources")
+        if resources then
+            debugLog("\n✓ Resources encontrado")
+            debugPrintChildren(resources, 2)
+            
+            local finisher = resources:FindFirstChild("Consecutive Punches Finisher")
+            if finisher then
+                debugLog("\n✓ Consecutive Punches Finisher encontrado")
+                debugPrintChildren(finisher, 3)
+                
+                local handClones = finisher:FindFirstChild("HandClones")
+                if handClones then
+                    debugLog("\n✓ HandClones encontrado")
+                    debugPrintChildren(handClones, 4)
+                else
+                    debugLog("\n✗ HandClones NÃO encontrado")
+                end
+            else
+                debugLog("\n✗ Consecutive Punches Finisher NÃO encontrado")
+            end
+        else
+            debugLog("\n✗ Resources NÃO encontrado")
+        end
+    end
+    
+    debugLog("\n=== EXPLORAÇÃO COMPLETA ===")
+end
+-- ==================== FIM DO SISTEMA DE DEBUG ====================
+
 function VFXManager.createAdvancedEnergyEffect(hand, scale)
     if not hand then return nil end
     local attachment = Instance.new("Attachment")
