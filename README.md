@@ -491,8 +491,8 @@ function VFXManager.createCustomBlackFlash()
                 local originalSpeed = child.Speed
                 local originalRate = child.Rate
                 
-                child.Speed = NumberRange.new(originalSpeed.Min * 8, originalSpeed.Max * 8)
-                child.Lifetime = NumberRange.new(0.02, 0.08)
+                child.Speed = NumberRange.new(originalSpeed.Min * 6, originalSpeed.Max * 6)
+                child.Lifetime = NumberRange.new(0.08, 0.2)
                 child.Rate = originalRate * 3
                 
                 if child.Size then
@@ -510,9 +510,9 @@ function VFXManager.createCustomBlackFlash()
                     NumberSequenceKeypoint.new(1, 1)
                 })
                 
-                child:Emit(80)
+                child:Emit(60)
                 child.Enabled = true
-                task.wait(0.01)
+                task.wait(0.02)
                 child.Enabled = false
             end
         end
@@ -534,7 +534,7 @@ function VFXManager.createCustomBlackFlash()
             end
         end)
         
-        Services.Debris:AddItem(vfxClone, 0.15)
+        Services.Debris:AddItem(vfxClone, 0.35)
     end)
 end
 function VFXManager.trigger(vfxType, duration)
