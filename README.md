@@ -28,28 +28,20 @@ local CONFIG = {
             useFOV = false,
             useRedLight = false,
             useBlackFlashText = false,
-            useHandFire = true,
+            useAdvancedHandFire = true,
             handFireDuration = 2
         },
         [10471336737] = {
             skillName = "SHOVE",
             animationId = 18179181663,
             speed = 1,
-            timePos = 0,
-            useFOV = false,
-            useRedLight = false,
-            useBlackFlashText = false,
-            useAttackVFX = false
+            timePos = 0
         },
         [10470104242] = {
             skillName = "UPPERCUT",
             animationId = 17858997926,
             speed = 1.1,
-            timePos = 0,
-            useFOV = false,
-            useRedLight = false,
-            useBlackFlashText = false,
-            useAttackVFX = false
+            timePos = 0
         },
         [12510170988] = {
             skillName = "SKILL 5",
@@ -176,7 +168,6 @@ function FontManager.applyFont(label)
     if not CONFIG.FONT.Enabled or not label:IsA("TextLabel") then
         return
     end
-    
     pcall(function()
         label.FontFace = Font.new(label.FontFace.Family, CONFIG.FONT.Weight, CONFIG.FONT.Style)
         label.Font = CONFIG.FONT.Font
@@ -187,30 +178,22 @@ local CursedFireManager = {}
 
 function CursedFireManager.remove(buttonBase)
     if not buttonBase then return end
-    
     local group = buttonBase:FindFirstChild("CursedFireEffectGroup")
-    if group then
-        group:Destroy()
-    end
+    if group then group:Destroy() end
 end
 
 function CursedFireManager.add(buttonBase)
     if not buttonBase then return end
-    
     CursedFireManager.remove(buttonBase)
-    
-    local success, err = pcall(function()
+    local success = pcall(function()
         local kj = PlayerData.playerGui.Hotbar.Backpack.LocalScript:FindFirstChild("Flipbook")
         if not kj then return end
-        
         local clone = kj:Clone()
         local group = Instance.new("Folder")
         group.Name = "CursedFireEffectGroup"
         group.Parent = buttonBase
-        
         clone.Parent = group
         clone.LocalScript.Enabled = true
-        
         for _, desc in pairs(clone:GetDescendants()) do
             if desc:IsA("ParticleEmitter") then
                 desc.Color = ColorSequence.new({
@@ -221,37 +204,6 @@ function CursedFireManager.add(buttonBase)
             end
         end
     end)
-    
-    if not success then
-        warn("Failed to add cursed fire: " .. tostring(err))
-    end
-end
-
-function CursedFireManager.removeAll()
-    local success, err = pcall(function()
-        local hotbar = PlayerData.playerGui:FindFirstChild("Hotbar")
-        if not hotbar then return end
-        
-        local backpack = hotbar:FindFirstChild("Backpack")
-        if not backpack then return end
-        
-        local hotbarFrame = backpack:FindFirstChild("Hotbar")
-        if not hotbarFrame then return end
-        
-        for i = 1, 4 do
-            local baseButton = hotbarFrame:FindFirstChild(tostring(i))
-            if baseButton then
-                baseButton = baseButton:FindFirstChild("Base")
-                if baseButton then
-                    CursedFireManager.remove(baseButton)
-                end
-            end
-        end
-    end)
-    
-    if not success then
-        warn("Failed to remove all cursed fire: " .. tostring(err))
-    end
 end
 
 local UIManager = {}
@@ -260,25 +212,20 @@ function UIManager.getHotbarButton(index)
     local success, result = pcall(function()
         local hotbar = PlayerData.playerGui:FindFirstChild("Hotbar")
         if not hotbar then return nil end
-        
         local backpack = hotbar:FindFirstChild("Backpack")
         if not backpack then return nil end
-        
         local hotbarFrame = backpack:FindFirstChild("Hotbar")
         if not hotbarFrame then return nil end
-        
         local button = hotbarFrame:FindFirstChild(tostring(index))
         if not button then return nil end
-        
         return button:FindFirstChild("Base")
     end)
-    
     return success and result or nil
 end
 
 function UIManager.updateAttackNames()
     while PlayerData.character and PlayerData.humanoid and PlayerData.humanoid.Health > 0 do
-        local success = pcall(function()
+        pcall(function()
             for i = 1, 4 do
                 local baseButton = UIManager.getHotbarButton(i)
                 if baseButton then
@@ -290,14 +237,12 @@ function UIManager.updateAttackNames()
                                 FontManager.applyFont(toolName)
                             end
                         end
-                        
                         for originalName, newName in pairs(CONFIG.ULTIMATE_NAMES) do
                             if toolName.Text == originalName then
                                 toolName.Text = newName
                                 FontManager.applyFont(toolName)
                             end
                         end
-                        
                         if toolName.Text == "Do not change here" then
                             CursedFireManager.add(baseButton)
                         else
@@ -307,11 +252,6 @@ function UIManager.updateAttackNames()
                 end
             end
         end)
-        
-        if not success then
-            task.wait(0.5)
-        end
-        
         task.wait(0.1)
     end
 end
@@ -319,24 +259,21 @@ end
 local NotificationManager = {}
 
 function NotificationManager.createBlackFlash()
-    local success, err = pcall(function()
+    pcall(function()
         local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
-        
         local sound = Instance.new("Sound")
         sound.SoundId = "rbxassetid://9086333748"
         sound.Volume = 0.5
         sound.Parent = hrp
         sound:Play()
         Services.Debris:AddItem(sound, 2)
-        
         local billboard = Instance.new("BillboardGui")
         billboard.Name = "BlackFlashBillboard"
         billboard.Size = UDim2.new(3.9, 0, 4, 0)
         billboard.StudsOffset = Vector3.new(-2, 4.1, 0)
         billboard.AlwaysOnTop = true
         billboard.Parent = hrp
-        
         local balloon = Instance.new("ImageLabel")
         balloon.Name = "Balloon"
         balloon.Image = "rbxassetid://136797177442983"
@@ -344,7 +281,6 @@ function NotificationManager.createBlackFlash()
         balloon.Position = UDim2.new(0, 0, 0, 0)
         balloon.BackgroundTransparency = 1
         balloon.Parent = billboard
-        
         local blackFlashText = Instance.new("ImageLabel")
         blackFlashText.Name = "BlackFlashText"
         blackFlashText.Image = "rbxassetid://17702987052"
@@ -353,199 +289,175 @@ function NotificationManager.createBlackFlash()
         blackFlashText.AnchorPoint = Vector2.new(0.5, 0.5)
         blackFlashText.BackgroundTransparency = 1
         blackFlashText.Parent = balloon
-        
         billboard.Size = UDim2.new(0, 0, 0, 0)
-        
-        local tweenIn = Services.TweenService:Create(
-            billboard,
-            TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-            {Size = UDim2.new(3.9, 0, 4, 0)}
-        )
+        local tweenIn = Services.TweenService:Create(billboard, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(3.9, 0, 4, 0)})
         tweenIn:Play()
-        
         task.wait(2)
-        
-        local tweenOut = Services.TweenService:Create(
-            billboard,
-            TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-            {Size = UDim2.new(0, 0, 0, 0)}
-        )
+        local tweenOut = Services.TweenService:Create(billboard, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
         tweenOut:Play()
-        
         Services.Debris:AddItem(billboard, 0.3)
     end)
-    
-    if not success then
-        warn("Failed to create black flash notification: " .. tostring(err))
-    end
 end
 
 local VFXManager = {}
 
-function VFXManager.createHandFire(duration)
-    local success, err = pcall(function()
-        local leftHand = PlayerData.character:FindFirstChild("Left Arm") or 
-                        PlayerData.character:FindFirstChild("LeftHand") or 
-                        PlayerData.character:FindFirstChild("LeftLowerArm")
-        local rightHand = PlayerData.character:FindFirstChild("Right Arm") or 
-                         PlayerData.character:FindFirstChild("RightHand") or 
-                         PlayerData.character:FindFirstChild("RightLowerArm")
-        
-        local attachments = {}
-        
-        local function setupHandFire(hand)
-            if not hand then return nil end
-            
-            local attachment = Instance.new("Attachment")
-            attachment.Name = "TempHandFireAttachment"
-            attachment.Position = Vector3.new(0, -0.5, 0)
-            attachment.Parent = hand
-            
-            local darkFire = Instance.new("ParticleEmitter")
-            darkFire.Name = "DarkBlueFire"
-            darkFire.Parent = attachment
-            darkFire.Texture = "rbxassetid://11534281007"
-            darkFire.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
-                ColorSequenceKeypoint.new(0.7, Color3.fromRGB(0, 50, 100)),
-                ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)
-            })
-            darkFire.Size = NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 0.8),
-                NumberSequenceKeypoint.new(0.3, 2),
-                NumberSequenceKeypoint.new(0.7, 1.5),
-                NumberSequenceKeypoint.new(1, 0.4)
-            })
-            darkFire.Transparency = NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 0.3),
-                NumberSequenceKeypoint.new(0.4, 0.5),
-                NumberSequenceKeypoint.new(0.8, 0.8),
-                NumberSequenceKeypoint.new(1, 1)
-            })
-            darkFire.Lifetime = NumberRange.new(0.6, 1)
-            darkFire.Rate = 100
-            darkFire.Speed = NumberRange.new(1, 2.5)
-            darkFire.SpreadAngle = Vector2.new(25, 25)
-            darkFire.Rotation = NumberRange.new(0, 360)
-            darkFire.RotSpeed = NumberRange.new(-80, 80)
-            darkFire.LightEmission = 0.3
-            darkFire.Acceleration = Vector3.new(0, 2, 0)
-            darkFire.Drag = 3
-            darkFire.LockedToPart = true
-            darkFire.Enabled = true
-            
-            local core = Instance.new("ParticleEmitter")
-            core.Name = "BlueCore"
-            core.Parent = attachment
-            core.Texture = "rbxassetid://11534281007"
-            core.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, CONFIG.COLORS.bright),
-                ColorSequenceKeypoint.new(0.3, CONFIG.COLORS.glow),
-                ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)
-            })
-            core.Size = NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 0.4),
-                NumberSequenceKeypoint.new(0.2, 1.2),
-                NumberSequenceKeypoint.new(0.6, 1),
-                NumberSequenceKeypoint.new(1, 0.2)
-            })
-            core.Transparency = NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 0),
-                NumberSequenceKeypoint.new(0.3, 0.1),
-                NumberSequenceKeypoint.new(0.7, 0.5),
-                NumberSequenceKeypoint.new(1, 1)
-            })
-            core.Lifetime = NumberRange.new(0.4, 0.7)
-            core.Rate = 150
-            core.Speed = NumberRange.new(2, 4)
-            core.SpreadAngle = Vector2.new(15, 15)
-            core.Rotation = NumberRange.new(0, 360)
-            core.RotSpeed = NumberRange.new(-80, 80)
-            core.LightEmission = 1
-            core.Acceleration = Vector3.new(0, 3, 0)
-            core.Drag = 2.5
-            core.LockedToPart = true
-            core.Enabled = true
-            
-            local outer = Instance.new("ParticleEmitter")
-            outer.Name = "BlueOuter"
-            outer.Parent = attachment
-            outer.Texture = "rbxassetid://11534281007"
-            outer.Color = ColorSequence.new(CONFIG.COLORS.primary)
-            outer.Size = NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 0.6),
-                NumberSequenceKeypoint.new(0.3, 1.5),
-                NumberSequenceKeypoint.new(0.7, 1.2),
-                NumberSequenceKeypoint.new(1, 0)
-            })
-            outer.Transparency = NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 0.2),
-                NumberSequenceKeypoint.new(0.4, 0.3),
-                NumberSequenceKeypoint.new(0.8, 0.7),
-                NumberSequenceKeypoint.new(1, 1)
-            })
-            outer.Lifetime = NumberRange.new(0.5, 0.9)
-            outer.Rate = 120
-            outer.Speed = NumberRange.new(1.5, 3)
-            outer.SpreadAngle = Vector2.new(20, 20)
-            outer.Rotation = NumberRange.new(0, 360)
-            outer.RotSpeed = NumberRange.new(-100, 100)
-            outer.LightEmission = 0.9
-            outer.Acceleration = Vector3.new(0, 2.5, 0)
-            outer.Drag = 2
-            outer.LockedToPart = true
-            outer.Enabled = true
-            
-            return attachment
-        end
-        
+function VFXManager.createAdvancedEnergyEffect(hand, scale)
+    if not hand then return nil end
+    local attachment = Instance.new("Attachment")
+    attachment.Name = "EnergyAttachment"
+    attachment.Position = Vector3.new(0, -0.5, 0)
+    attachment.Parent = hand
+    local effects = {}
+    scale = scale or 1
+    
+    local darkFire = Instance.new("ParticleEmitter")
+    darkFire.Name = "DarkFire"
+    darkFire.Parent = attachment
+    darkFire.Texture = "rbxassetid://11534281007"
+    darkFire.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, CONFIG.COLORS.dark), ColorSequenceKeypoint.new(0.7, CONFIG.COLORS.dark), ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)})
+    darkFire.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 1 * scale), NumberSequenceKeypoint.new(0.3, 2.5 * scale), NumberSequenceKeypoint.new(0.7, 2 * scale), NumberSequenceKeypoint.new(1, 0.5 * scale)})
+    darkFire.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(0.4, 0.5), NumberSequenceKeypoint.new(0.8, 0.8), NumberSequenceKeypoint.new(1, 1)})
+    darkFire.Lifetime = NumberRange.new(0.6, 1)
+    darkFire.Rate = 80 * scale
+    darkFire.Speed = NumberRange.new(1, 2.5)
+    darkFire.SpreadAngle = Vector2.new(25, 25)
+    darkFire.Rotation = NumberRange.new(0, 360)
+    darkFire.RotSpeed = NumberRange.new(-80, 80)
+    darkFire.LightEmission = 0
+    darkFire.ZOffset = -0.1
+    darkFire.Acceleration = Vector3.new(0, 2, 0)
+    darkFire.Drag = 3
+    darkFire.LockedToPart = true
+    darkFire.EmissionDirection = Enum.NormalId.Top
+    darkFire.Enabled = true
+    table.insert(effects, darkFire)
+    
+    local core = Instance.new("ParticleEmitter")
+    core.Name = "EnergyCore"
+    core.Parent = attachment
+    core.Texture = "rbxassetid://11534281007"
+    core.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, CONFIG.COLORS.bright), ColorSequenceKeypoint.new(0.3, CONFIG.COLORS.glow), ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)})
+    core.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.5 * scale), NumberSequenceKeypoint.new(0.2, 1.5 * scale), NumberSequenceKeypoint.new(0.6, 1.2 * scale), NumberSequenceKeypoint.new(1, 0.3 * scale)})
+    core.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.3, 0.1), NumberSequenceKeypoint.new(0.7, 0.5), NumberSequenceKeypoint.new(1, 1)})
+    core.Lifetime = NumberRange.new(0.4, 0.7)
+    core.Rate = 120 * scale
+    core.Speed = NumberRange.new(2, 4)
+    core.SpreadAngle = Vector2.new(15, 15)
+    core.Rotation = NumberRange.new(0, 360)
+    core.RotSpeed = NumberRange.new(-80, 80)
+    core.LightEmission = 1
+    core.ZOffset = 0.3
+    core.Acceleration = Vector3.new(0, 3, 0)
+    core.Drag = 2.5
+    core.LockedToPart = true
+    core.EmissionDirection = Enum.NormalId.Top
+    core.Enabled = true
+    table.insert(effects, core)
+    
+    local outer = Instance.new("ParticleEmitter")
+    outer.Name = "EnergyOuter"
+    outer.Parent = attachment
+    outer.Texture = "rbxassetid://11534281007"
+    outer.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, CONFIG.COLORS.primary), ColorSequenceKeypoint.new(0.5, CONFIG.COLORS.secondary), ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)})
+    outer.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.8 * scale), NumberSequenceKeypoint.new(0.3, 2 * scale), NumberSequenceKeypoint.new(0.7, 1.5 * scale), NumberSequenceKeypoint.new(1, 0)})
+    outer.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(0.4, 0.3), NumberSequenceKeypoint.new(0.8, 0.7), NumberSequenceKeypoint.new(1, 1)})
+    outer.Lifetime = NumberRange.new(0.5, 0.9)
+    outer.Rate = 100 * scale
+    outer.Speed = NumberRange.new(1.5, 3)
+    outer.SpreadAngle = Vector2.new(20, 20)
+    outer.Rotation = NumberRange.new(0, 360)
+    outer.RotSpeed = NumberRange.new(-100, 100)
+    outer.LightEmission = 0.9
+    outer.ZOffset = 0.2
+    outer.Acceleration = Vector3.new(0, 2.5, 0)
+    outer.Drag = 2
+    outer.LockedToPart = true
+    outer.EmissionDirection = Enum.NormalId.Top
+    outer.Enabled = true
+    table.insert(effects, outer)
+    
+    local baseGlow = Instance.new("ParticleEmitter")
+    baseGlow.Name = "BaseGlow"
+    baseGlow.Parent = attachment
+    baseGlow.Texture = "rbxassetid://11841348746"
+    baseGlow.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, CONFIG.COLORS.bright), ColorSequenceKeypoint.new(0.5, CONFIG.COLORS.glow), ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)})
+    baseGlow.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 1.2 * scale), NumberSequenceKeypoint.new(0.4, 1.8 * scale), NumberSequenceKeypoint.new(1, 0)})
+    baseGlow.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(0.5, 0.6), NumberSequenceKeypoint.new(1, 1)})
+    baseGlow.Lifetime = NumberRange.new(0.2, 0.4)
+    baseGlow.Rate = 80 * scale
+    baseGlow.Speed = NumberRange.new(0.5, 1.5)
+    baseGlow.SpreadAngle = Vector2.new(25, 25)
+    baseGlow.Rotation = NumberRange.new(0, 360)
+    baseGlow.RotSpeed = NumberRange.new(-150, 150)
+    baseGlow.LightEmission = 1
+    baseGlow.ZOffset = 0.1
+    baseGlow.Acceleration = Vector3.new(0, 2, 0)
+    baseGlow.Drag = 1
+    baseGlow.LockedToPart = true
+    baseGlow.EmissionDirection = Enum.NormalId.Top
+    baseGlow.Enabled = true
+    table.insert(effects, baseGlow)
+    
+    local wisps = Instance.new("ParticleEmitter")
+    wisps.Name = "EnergyWisps"
+    wisps.Parent = attachment
+    wisps.Texture = "rbxassetid://11841348746"
+    wisps.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, CONFIG.COLORS.glow), ColorSequenceKeypoint.new(1, CONFIG.COLORS.secondary)})
+    wisps.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.3 * scale), NumberSequenceKeypoint.new(0.5, 0.6 * scale), NumberSequenceKeypoint.new(1, 0.2 * scale)})
+    wisps.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(0.6, 0.6), NumberSequenceKeypoint.new(1, 1)})
+    wisps.Lifetime = NumberRange.new(0.6, 1)
+    wisps.Rate = 60 * scale
+    wisps.Speed = NumberRange.new(3, 5)
+    wisps.SpreadAngle = Vector2.new(12, 12)
+    wisps.Rotation = NumberRange.new(0, 360)
+    wisps.RotSpeed = NumberRange.new(-200, 200)
+    wisps.LightEmission = 1
+    wisps.ZOffset = 0.4
+    wisps.Acceleration = Vector3.new(0, 4, 0)
+    wisps.Drag = 1.8
+    wisps.LockedToPart = true
+    wisps.EmissionDirection = Enum.NormalId.Top
+    wisps.Enabled = true
+    table.insert(effects, wisps)
+    
+    return {attachment = attachment, effects = effects}
+end
+
+function VFXManager.createAdvancedHandFire(duration)
+    pcall(function()
+        local leftHand = PlayerData.character:FindFirstChild("Left Arm") or PlayerData.character:FindFirstChild("LeftHand") or PlayerData.character:FindFirstChild("LeftLowerArm")
+        local rightHand = PlayerData.character:FindFirstChild("Right Arm") or PlayerData.character:FindFirstChild("RightHand") or PlayerData.character:FindFirstChild("RightLowerArm")
+        local effectGroups = {}
         if leftHand then
-            table.insert(attachments, setupHandFire(leftHand))
+            effectGroups.left = VFXManager.createAdvancedEnergyEffect(leftHand, 0.8)
         end
         if rightHand then
-            table.insert(attachments, setupHandFire(rightHand))
+            effectGroups.right = VFXManager.createAdvancedEnergyEffect(rightHand, 0.8)
         end
-        
         task.wait(duration)
-        
-        for _, attachment in pairs(attachments) do
-            if attachment then
-                attachment:Destroy()
+        for _, group in pairs(effectGroups) do
+            if group then
+                for _, effect in pairs(group.effects) do
+                    if effect then effect:Destroy() end
+                end
+                if group.attachment then group.attachment:Destroy() end
             end
         end
     end)
-    
-    if not success then
-        warn("Failed to create hand fire: " .. tostring(err))
-    end
 end
 
 function VFXManager.createBlackFlash(parent, duration)
-    local success, err = pcall(function()
+    pcall(function()
         local attachment = Instance.new("Attachment")
         attachment.Name = "BlackFlashAttachment"
         attachment.Parent = parent
-        
         local explosion = Instance.new("ParticleEmitter")
         explosion.Name = "BlackFlashExplosion"
         explosion.Parent = attachment
         explosion.Texture = "rbxassetid://11534281007"
-        explosion.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-            ColorSequenceKeypoint.new(0.3, Color3.fromRGB(255, 50, 50)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 0, 0))
-        })
-        explosion.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0),
-            NumberSequenceKeypoint.new(0.1, 4),
-            NumberSequenceKeypoint.new(0.5, 3),
-            NumberSequenceKeypoint.new(1, 0)
-        })
-        explosion.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0),
-            NumberSequenceKeypoint.new(0.5, 0.5),
-            NumberSequenceKeypoint.new(1, 1)
-        })
+        explosion.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(0.3, Color3.fromRGB(255, 50, 50)), ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 0, 0))})
+        explosion.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.1, 4), NumberSequenceKeypoint.new(0.5, 3), NumberSequenceKeypoint.new(1, 0)})
+        explosion.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 0.5), NumberSequenceKeypoint.new(1, 1)})
         explosion.Lifetime = NumberRange.new(0.4, 0.6)
         explosion.Rate = 200
         explosion.Speed = NumberRange.new(8, 15)
@@ -555,144 +467,83 @@ function VFXManager.createBlackFlash(parent, duration)
         explosion.LightEmission = 1
         explosion.ZOffset = 0.5
         explosion.Enabled = true
-        
         local sparks = Instance.new("ParticleEmitter")
         sparks.Name = "BlackFlashSparks"
         sparks.Parent = attachment
         sparks.Texture = "rbxassetid://11841348746"
         sparks.Color = ColorSequence.new(Color3.fromRGB(255, 100, 100))
-        sparks.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.3),
-            NumberSequenceKeypoint.new(1, 0.1)
-        })
-        sparks.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.2),
-            NumberSequenceKeypoint.new(1, 1)
-        })
+        sparks.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 0.1)})
+        sparks.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(1, 1)})
         sparks.Lifetime = NumberRange.new(0.3, 0.5)
         sparks.Rate = 150
         sparks.Speed = NumberRange.new(15, 25)
         sparks.SpreadAngle = Vector2.new(90, 90)
         sparks.LightEmission = 1
         sparks.Enabled = true
-        
         task.wait(duration)
         attachment:Destroy()
     end)
-    
-    if not success then
-        warn("Failed to create black flash VFX: " .. tostring(err))
-    end
 end
 
 function VFXManager.trigger(vfxType, duration)
-    local success, err = pcall(function()
+    pcall(function()
         local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
-        
         if vfxType == "blackFlash" then
             VFXManager.createBlackFlash(hrp, duration)
         end
     end)
-    
-    if not success then
-        warn("Failed to trigger VFX: " .. tostring(err))
-    end
 end
 
 local CameraManager = {}
 
 function CameraManager.applyFOVEffect()
-    local success, err = pcall(function()
+    pcall(function()
         local camera = workspace.CurrentCamera
         if not camera then return end
-        
         local originalFOV = camera.FieldOfView
-        
-        local fovIncrease = Services.TweenService:Create(
-            camera,
-            TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {FieldOfView = originalFOV + 20}
-        )
+        local fovIncrease = Services.TweenService:Create(camera, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {FieldOfView = originalFOV + 20})
         fovIncrease:Play()
-        
         task.wait(0.3)
-        
-        local fovDecrease = Services.TweenService:Create(
-            camera,
-            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-            {FieldOfView = originalFOV}
-        )
+        local fovDecrease = Services.TweenService:Create(camera, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {FieldOfView = originalFOV})
         fovDecrease:Play()
     end)
-    
-    if not success then
-        warn("Failed to apply FOV effect: " .. tostring(err))
-    end
 end
 
 local LightingManager = {}
 
 function LightingManager.applyRedLight()
-    local success, err = pcall(function()
+    pcall(function()
         local originalAmbient = Services.Lighting.Ambient
         local originalBrightness = Services.Lighting.Brightness
-        
-        local lightTween = Services.TweenService:Create(
-            Services.Lighting,
-            TweenInfo.new(0.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.InOut),
-            {
-                Ambient = Color3.new(0.4, 0.05, 0.05),
-                Brightness = 1
-            }
-        )
+        local lightTween = Services.TweenService:Create(Services.Lighting, TweenInfo.new(0.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.InOut), {Ambient = Color3.new(0.4, 0.05, 0.05), Brightness = 1})
         lightTween:Play()
-        
         task.wait(0.5)
-        
-        local lightReturn = Services.TweenService:Create(
-            Services.Lighting,
-            TweenInfo.new(0.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.InOut),
-            {
-                Ambient = originalAmbient,
-                Brightness = originalBrightness
-            }
-        )
+        local lightReturn = Services.TweenService:Create(Services.Lighting, TweenInfo.new(0.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.InOut), {Ambient = originalAmbient, Brightness = originalBrightness})
         lightReturn:Play()
     end)
-    
-    if not success then
-        warn("Failed to apply red light: " .. tostring(err))
-    end
 end
 
 local SoundManager = {}
 
 function SoundManager.playSound(soundId, volume)
-    local success, err = pcall(function()
+    pcall(function()
         local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
-        
         local sound = Instance.new("Sound")
         sound.SoundId = "rbxassetid://" .. soundId
         sound.Volume = volume or 1
         sound.Parent = hrp
         sound:Play()
-        
         Services.Debris:AddItem(sound, 5)
     end)
-    
-    if not success then
-        warn("Failed to play sound: " .. tostring(err))
-    end
 end
 
 local AnimationManager = {}
 
 function AnimationManager.stopAnimation(animationId)
-    local success, err = pcall(function()
+    pcall(function()
         if not PlayerData.humanoid then return end
-        
         for _, track in ipairs(PlayerData.humanoid:GetPlayingAnimationTracks()) do
             local trackId = tonumber(track.Animation.AnimationId:match("%d+"))
             if trackId == animationId then
@@ -700,83 +551,58 @@ function AnimationManager.stopAnimation(animationId)
             end
         end
     end)
-    
-    if not success then
-        warn("Failed to stop animation: " .. tostring(err))
-    end
 end
 
 function AnimationManager.playAnimation(animationId, speed, timePos)
     local success, track = pcall(function()
         if not PlayerData.humanoid then return nil end
-        
         local animation = Instance.new("Animation")
         animation.AnimationId = "rbxassetid://" .. animationId
-        
         local animTrack = PlayerData.humanoid:LoadAnimation(animation)
         animTrack:Play()
         animTrack:AdjustSpeed(0)
         animTrack.TimePosition = timePos or 0
         animTrack:AdjustSpeed(speed or 1)
-        
         return animTrack
     end)
-    
-    if not success then
-        warn("Failed to play animation: " .. tostring(track))
-        return nil
-    end
-    
+    if not success then return nil end
     return track
 end
 
 function AnimationManager.setupReplacement(originalId, config)
-    local success, err = pcall(function()
+    pcall(function()
         if not PlayerData.humanoid then return end
-        
         PlayerData.humanoid.AnimationPlayed:Connect(function(animationTrack)
             local trackId = tonumber(animationTrack.Animation.AnimationId:match("%d+"))
             if trackId ~= originalId then return end
-            
             task.wait()
-            
             AnimationManager.stopAnimation(originalId)
             AnimationManager.playAnimation(config.animationId, config.speed, config.timePos)
-            
             if config.soundId then
                 SoundManager.playSound(config.soundId, 1)
             end
-            
-            if config.useHandFire then
+            if config.useAdvancedHandFire then
                 task.spawn(function()
-                    VFXManager.createHandFire(config.handFireDuration or 2)
+                    VFXManager.createAdvancedHandFire(config.handFireDuration or 2)
                 end)
             end
-            
             if config.useAttackVFX and config.vfxType then
                 task.spawn(function()
                     task.wait(config.vfxDelay or 0.2)
                     VFXManager.trigger(config.vfxType, config.vfxDuration or 1)
                 end)
             end
-            
             if config.useFOV then
                 task.spawn(CameraManager.applyFOVEffect)
             end
-            
             if config.useRedLight then
                 task.spawn(LightingManager.applyRedLight)
             end
-            
             if config.useBlackFlashText then
                 task.spawn(NotificationManager.createBlackFlash)
             end
         end)
     end)
-    
-    if not success then
-        warn("Failed to setup animation replacement: " .. tostring(err))
-    end
 end
 
 function AnimationManager.playFullReplacement(originalId, config)
@@ -784,137 +610,88 @@ function AnimationManager.playFullReplacement(originalId, config)
         table.insert(PlayerData.animationQueue, {originalId, config})
         return
     end
-    
-    local success, err = pcall(function()
+    pcall(function()
         PlayerData.isAnimating = true
-        
         local animation = Instance.new("Animation")
         animation.AnimationId = "rbxassetid://" .. config.animationId
-        
         local animTrack = PlayerData.humanoid:LoadAnimation(animation)
         animTrack:Play()
         animTrack:AdjustSpeed(config.speed or 1)
-        
         animTrack.Stopped:Connect(function()
             PlayerData.isAnimating = false
-            
             if #PlayerData.animationQueue > 0 then
                 local next = table.remove(PlayerData.animationQueue, 1)
                 AnimationManager.playFullReplacement(next[1], next[2])
             end
         end)
     end)
-    
-    if not success then
-        warn("Failed to play full replacement: " .. tostring(err))
-        PlayerData.isAnimating = false
-    end
 end
 
 function AnimationManager.setupFullReplacement(originalId, config)
-    local success, err = pcall(function()
+    pcall(function()
         if not PlayerData.humanoid then return end
-        
         PlayerData.humanoid.AnimationPlayed:Connect(function(animationTrack)
             local animId = tonumber(animationTrack.Animation.AnimationId:match("%d+"))
             if animId ~= originalId then return end
-            
             AnimationManager.stopAnimation(originalId)
             animationTrack:Stop()
-            
             AnimationManager.playFullReplacement(originalId, config)
         end)
     end)
-    
-    if not success then
-        warn("Failed to setup full replacement: " .. tostring(err))
-    end
 end
 
 local PhysicsManager = {}
 
 function PhysicsManager.onBodyVelocityAdded(bodyVelocity)
     if not bodyVelocity:IsA("BodyVelocity") then return end
-    
-    local success, err = pcall(function()
-        bodyVelocity.Velocity = Vector3.new(
-            bodyVelocity.Velocity.X,
-            0,
-            bodyVelocity.Velocity.Z
-        )
+    pcall(function()
+        bodyVelocity.Velocity = Vector3.new(bodyVelocity.Velocity.X, 0, bodyVelocity.Velocity.Z)
     end)
-    
-    if not success then
-        warn("Failed to modify body velocity: " .. tostring(err))
-    end
 end
 
 function PhysicsManager.setupVelocityHandler()
-    local success, err = pcall(function()
+    pcall(function()
         if not PlayerData.character then return end
-        
         PlayerData.character.DescendantAdded:Connect(PhysicsManager.onBodyVelocityAdded)
-        
         for _, descendant in pairs(PlayerData.character:GetDescendants()) do
             PhysicsManager.onBodyVelocityAdded(descendant)
         end
     end)
-    
-    if not success then
-        warn("Failed to setup velocity handler: " .. tostring(err))
-    end
 end
 
 local CharacterManager = {}
 
 function CharacterManager.initialize()
-    local success, err = pcall(function()
+    pcall(function()
         for originalId, config in pairs(CONFIG.ANIMATION_REPLACEMENTS) do
             AnimationManager.setupReplacement(originalId, config)
         end
-        
         for originalId, config in pairs(CONFIG.FULL_REPLACEMENT_ANIMATIONS) do
             AnimationManager.setupFullReplacement(originalId, config)
         end
-        
         task.spawn(UIManager.updateAttackNames)
         PhysicsManager.setupVelocityHandler()
     end)
-    
-    if not success then
-        warn("Failed to initialize character: " .. tostring(err))
-    end
 end
 
 function CharacterManager.onCharacterAdded(newCharacter)
-    local success, err = pcall(function()
+    pcall(function()
         PlayerData.character = newCharacter
         PlayerData.humanoid = newCharacter:WaitForChild("Humanoid")
-        
         task.wait(1)
         CharacterManager.initialize()
     end)
-    
-    if not success then
-        warn("Failed on character added: " .. tostring(err))
-    end
 end
 
 local SystemManager = {}
 
 function SystemManager.start()
-    local success, err = pcall(function()
+    pcall(function()
         initializePlayerData()
-        
         task.wait(1)
         CharacterManager.initialize()
-        
         PlayerData.player.CharacterAdded:Connect(CharacterManager.onCharacterAdded)
     end)
-    
-    if not success then
-        warn("Failed to start system: " .. tostring(err))
-    end
 end
 
 SystemManager.start()
