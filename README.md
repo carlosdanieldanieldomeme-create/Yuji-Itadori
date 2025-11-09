@@ -39,13 +39,13 @@ local CONFIG = {
         },
         [10470104242] = {
             skillName = "UPPERCUT",
-            animationId = 17858997926,
+            animationId = 18179181663,
             speed = 1.1,
             timePos = 0
         },
         [12510170988] = {
             skillName = "SKILL 5",
-            animationId = 18897119503,
+            animationId = 18179181663,
             speed = 1
         },
         [11343318134] = {
