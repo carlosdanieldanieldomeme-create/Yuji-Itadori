@@ -7,7 +7,12 @@ local ANIMATION_REPLACEMENTS = {
         soundId = 75307432501177,
         useFOV = true,
         useRedLight = true,
-        useBlackFlashText = true
+        useBlackFlashText = true,
+        -- NOVO: Sistema de partículas
+        useAttackVFX = true,
+        vfxDelay = 0.15,
+        vfxDuration = 0.8,
+        vfxType = "blackFlash"
     },
     [10466974800] = {
         skillName = "CONSECUTIVE PUNCHES",
@@ -27,7 +32,12 @@ local ANIMATION_REPLACEMENTS = {
         soundId = nil,
         useFOV = true,
         useRedLight = false,
-        useBlackFlashText = false
+        useBlackFlashText = false,
+        -- NOVO: VFX para Shove
+        useAttackVFX = true,
+        vfxDelay = 0.2,
+        vfxDuration = 1.2,
+        vfxType = "shockwave"
     },
     [10470104242] = {
         skillName = "UPPERCUT",
@@ -37,7 +47,12 @@ local ANIMATION_REPLACEMENTS = {
         soundId = nil,
         useFOV = false,
         useRedLight = false,
-        useBlackFlashText = false
+        useBlackFlashText = false,
+        -- NOVO: VFX para Uppercut
+        useAttackVFX = true,
+        vfxDelay = 0.25,
+        vfxDuration = 1.5,
+        vfxType = "uppercut"
     },
     [12510170988] = {
         skillName = "SKILL 5",
@@ -136,7 +151,11 @@ local COLORS = {
     bright = Color3.fromRGB(255, 255, 255),
     glow = Color3.fromRGB(150, 230, 255),
     dark = Color3.fromRGB(0, 0, 0),
-    darkBlue = Color3.fromRGB(0, 50, 80)
+    darkBlue = Color3.fromRGB(0, 50, 80),
+    -- NOVO: Cores para VFX de ataques
+    blackFlash = Color3.fromRGB(255, 50, 50),
+    shockwave = Color3.fromRGB(100, 200, 255),
+    uppercut = Color3.fromRGB(255, 200, 50)
 }
 
 local player = game.Players.LocalPlayer
@@ -272,6 +291,204 @@ local function createBlackFlashNotification()
     local tweenOut = game:GetService("TweenService"):Create(billboard, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
     tweenOut:Play()
     game:GetService("Debris"):AddItem(billboard, 0.3)
+end
+
+-- NOVO: Sistema de VFX por ataque
+local function createBlackFlashVFX(parent, duration)
+    local attachment = Instance.new("Attachment")
+    attachment.Name = "BlackFlashAttachment"
+    attachment.Parent = parent
+    
+    -- Explosão vermelha intensa
+    local explosion = Instance.new("ParticleEmitter")
+    explosion.Name = "BlackFlashExplosion"
+    explosion.Parent = attachment
+    explosion.Texture = "rbxassetid://11534281007"
+    explosion.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(0.3, Color3.fromRGB(255, 50, 50)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 0, 0))
+    })
+    explosion.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(0.1, 4),
+        NumberSequenceKeypoint.new(0.5, 3),
+        NumberSequenceKeypoint.new(1, 0)
+    })
+    explosion.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(0.5, 0.5),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    explosion.Lifetime = NumberRange.new(0.4, 0.6)
+    explosion.Rate = 200
+    explosion.Speed = NumberRange.new(8, 15)
+    explosion.SpreadAngle = Vector2.new(180, 180)
+    explosion.Rotation = NumberRange.new(0, 360)
+    explosion.RotSpeed = NumberRange.new(-200, 200)
+    explosion.LightEmission = 1
+    explosion.ZOffset = 0.5
+    explosion.Enabled = true
+    
+    -- Faíscas vermelhas
+    local sparks = Instance.new("ParticleEmitter")
+    sparks.Name = "BlackFlashSparks"
+    sparks.Parent = attachment
+    sparks.Texture = "rbxassetid://11841348746"
+    sparks.Color = ColorSequence.new(Color3.fromRGB(255, 100, 100))
+    sparks.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.3),
+        NumberSequenceKeypoint.new(1, 0.1)
+    })
+    sparks.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.2),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    sparks.Lifetime = NumberRange.new(0.3, 0.5)
+    sparks.Rate = 150
+    sparks.Speed = NumberRange.new(15, 25)
+    sparks.SpreadAngle = Vector2.new(90, 90)
+    sparks.LightEmission = 1
+    sparks.Enabled = true
+    
+    task.wait(duration)
+    attachment:Destroy()
+end
+
+local function createShockwaveVFX(parent, duration)
+    local attachment = Instance.new("Attachment")
+    attachment.Name = "ShockwaveAttachment"
+    attachment.Parent = parent
+    
+    -- Onda de choque azul
+    local wave = Instance.new("ParticleEmitter")
+    wave.Name = "ShockwaveRing"
+    wave.Parent = attachment
+    wave.Texture = "rbxassetid://11841348746"
+    wave.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(100, 200, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 100, 200))
+    })
+    wave.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.5),
+        NumberSequenceKeypoint.new(0.3, 5),
+        NumberSequenceKeypoint.new(1, 8)
+    })
+    wave.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(0.5, 0.3),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    wave.Lifetime = NumberRange.new(0.8, 1.2)
+    wave.Rate = 80
+    wave.Speed = NumberRange.new(10, 15)
+    wave.SpreadAngle = Vector2.new(5, 5)
+    wave.Rotation = NumberRange.new(0, 360)
+    wave.RotSpeed = NumberRange.new(-100, 100)
+    wave.LightEmission = 0.8
+    wave.Acceleration = Vector3.new(0, -5, 0)
+    wave.Enabled = true
+    
+    -- Partículas de impacto
+    local impact = Instance.new("ParticleEmitter")
+    impact.Name = "ShockwaveImpact"
+    impact.Parent = attachment
+    impact.Texture = "rbxassetid://11534281007"
+    impact.Color = ColorSequence.new(Color3.fromRGB(150, 230, 255))
+    impact.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(0.5, 2),
+        NumberSequenceKeypoint.new(1, 0.5)
+    })
+    impact.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.3),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    impact.Lifetime = NumberRange.new(0.5, 0.8)
+    impact.Rate = 100
+    impact.Speed = NumberRange.new(5, 10)
+    impact.SpreadAngle = Vector2.new(30, 30)
+    impact.LightEmission = 0.9
+    impact.Enabled = true
+    
+    task.wait(duration)
+    attachment:Destroy()
+end
+
+local function createUppercutVFX(parent, duration)
+    local attachment = Instance.new("Attachment")
+    attachment.Name = "UppercutAttachment"
+    attachment.Parent = parent
+    
+    -- Espiral dourada subindo
+    local spiral = Instance.new("ParticleEmitter")
+    spiral.Name = "UppercutSpiral"
+    spiral.Parent = attachment
+    spiral.Texture = "rbxassetid://11534281007"
+    spiral.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 200)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 200, 50)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 150, 0))
+    })
+    spiral.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(0.5, 2.5),
+        NumberSequenceKeypoint.new(1, 0.5)
+    })
+    spiral.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.2),
+        NumberSequenceKeypoint.new(0.7, 0.6),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    spiral.Lifetime = NumberRange.new(1, 1.5)
+    spiral.Rate = 120
+    spiral.Speed = NumberRange.new(10, 20)
+    spiral.SpreadAngle = Vector2.new(15, 15)
+    spiral.Rotation = NumberRange.new(0, 360)
+    spiral.RotSpeed = NumberRange.new(-300, 300)
+    spiral.LightEmission = 1
+    spiral.Acceleration = Vector3.new(0, 15, 0)  -- Sobe forte
+    spiral.Drag = 1
+    spiral.Enabled = true
+    
+    -- Rastro dourado
+    local trail = Instance.new("ParticleEmitter")
+    trail.Name = "UppercutTrail"
+    trail.Parent = attachment
+    trail.Texture = "rbxassetid://11841348746"
+    trail.Color = ColorSequence.new(Color3.fromRGB(255, 220, 100))
+    trail.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.8),
+        NumberSequenceKeypoint.new(1, 0.3)
+    })
+    trail.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.3),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    trail.Lifetime = NumberRange.new(0.6, 1)
+    trail.Rate = 150
+    trail.Speed = NumberRange.new(8, 15)
+    trail.SpreadAngle = Vector2.new(20, 20)
+    trail.LightEmission = 1
+    trail.Acceleration = Vector3.new(0, 10, 0)
+    trail.Enabled = true
+    
+    task.wait(duration)
+    attachment:Destroy()
+end
+
+local function triggerAttackVFX(vfxType, duration)
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    
+    if vfxType == "blackFlash" then
+        createBlackFlashVFX(hrp, duration)
+    elseif vfxType == "shockwave" then
+        createShockwaveVFX(hrp, duration)
+    elseif vfxType == "uppercut" then
+        createUppercutVFX(hrp, duration)
+    end
 end
 
 local function createAdvancedEnergyEffect(hand, scale)
@@ -457,6 +674,15 @@ local function setupAnimationReplacement(originalId, config)
                     game.Debris:AddItem(sound, 5)
                 end
             end
+            
+            -- NOVO: Trigger VFX de ataque
+            if config.useAttackVFX and config.vfxType then
+                task.spawn(function()
+                    task.wait(config.vfxDelay or 0.2)
+                    triggerAttackVFX(config.vfxType, config.vfxDuration or 1)
+                end)
+            end
+            
             if config.useFOV then
                 local camera = workspace.CurrentCamera
                 local originalFOV = camera.FieldOfView
