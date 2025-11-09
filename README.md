@@ -486,14 +486,13 @@ function VFXManager.createCustomBlackFlash()
             vfxClone.Orientation = Vector3.new(0, 0, 0)
         end
         
-        local emissionDuration = 1.5
-        local fadeOutDuration = 1.5
-        
         for _, child in ipairs(vfxClone:GetChildren()) do
             if child:IsA("ParticleEmitter") then
                 child.Enabled = true
                 child.Rate = 100
                 
+                -- NÃO MODIFICAR O SIZE - Mantém o tamanho original
+                -- Apenas adiciona transparência gradual
                 child.Transparency = NumberSequence.new({
                     NumberSequenceKeypoint.new(0, 1),
                     NumberSequenceKeypoint.new(0.15, 0.2),
@@ -504,33 +503,11 @@ function VFXManager.createCustomBlackFlash()
                 })
                 
                 child.Lifetime = NumberRange.new(1, 1.8)
-                
-                -- AUMENTAR O TAMANHO AQUI
-                local originalSize = child.Size
-                local multiplier = 3 -- Multiplica o tamanho por 3
-                
-                local newKeypoints = {}
-                for i, keypoint in ipairs(originalSize.Keypoints) do
-                    table.insert(newKeypoints, NumberSequenceKeypoint.new(
-                        keypoint.Time,
-                        keypoint.Value * multiplier,
-                        keypoint.Envelope * multiplier
-                    ))
-                end
-                child.Size = NumberSequence.new(newKeypoints)
-                
-                -- OU definir tamanho manual (mais fácil)
-                -- child.Size = NumberSequence.new({
-                --     NumberSequenceKeypoint.new(0, 0),
-                --     NumberSequenceKeypoint.new(0.2, 5),    -- Tamanho máximo 5
-                --     NumberSequenceKeypoint.new(0.8, 4),
-                --     NumberSequenceKeypoint.new(1, 0)
-                -- })
             end
         end
         
         task.spawn(function()
-            task.wait(emissionDuration)
+            task.wait(1.5)
             
             for _, child in ipairs(vfxClone:GetChildren()) do
                 if child:IsA("ParticleEmitter") then
@@ -538,7 +515,7 @@ function VFXManager.createCustomBlackFlash()
                 end
             end
             
-            task.wait(fadeOutDuration)
+            task.wait(1.5)
             vfxClone:Destroy()
         end)
     end)
