@@ -469,20 +469,12 @@ function VFXManager.createAdvancedHandFire(duration)
         end
     end)
 end
-
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Debris = game:GetService("Debris")
-
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-
-local function createBlackFlash()
+function VFXManager.createCustomBlackFlash()
     pcall(function()
-        local hrp = character:FindFirstChild("HumanoidRootPart")
+        local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
         
-        local vfxSource = ReplicatedStorage.Emotes.VFX.VfxMods.Flasher.vfx.LastImpactFx.Attachment
+        local vfxSource = Services.ReplicatedStorage.Emotes.VFX.VfxMods.Flasher.vfx.LastImpactFx.Attachment
         if not vfxSource then return end
         
         local vfxClone = vfxSource:Clone()
@@ -494,7 +486,7 @@ local function createBlackFlash()
         end
         
         for _, child in ipairs(vfxClone:GetChildren()) do
-            if child:IsA("ParticleEmitter") and child.Name == "Lightning" then
+            if child:IsA("ParticleEmitter") and (child.Name == "Lightning" or child.Name == "Glow") then
                 local originalSpeed = child.Speed
                 local originalRate = child.Rate
                 
@@ -541,10 +533,9 @@ local function createBlackFlash()
             end
         end)
         
-        Debris:AddItem(vfxClone, 0.35)
+        Services.Debris:AddItem(vfxClone, 0.35)
     end)
 end
-
 createBlackFlash()
 function VFXManager.trigger(vfxType, duration)
     pcall(function()
