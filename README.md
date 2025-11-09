@@ -307,112 +307,6 @@ end
 
 local VFXManager = {}
 
--- Cole este código DEPOIS da linha 'local VFXManager = {}' e ANTES da função 'VFXManager.createAdvancedEnergyEffect'
-
--- ==================== SISTEMA DE DEBUG ====================
-local DEBUG_MODE = true -- Mude para false para desativar logs
-
-local function debugLog(message, data)
-    if not DEBUG_MODE then return end
-    print("[VFX DEBUG]", message)
-    if data then
-        print("  Data:", data)
-    end
-end
-
-local function debugPrintChildren(parent, depth)
-    if not DEBUG_MODE or not parent then return end
-    local indent = string.rep("  ", depth or 0)
-    for _, child in ipairs(parent:GetChildren()) do
-        print(indent .. "- " .. child.Name .. " (" .. child.ClassName .. ")")
-    end
-end
-
--- Função para explorar estrutura de clones thrown
-local function exploreThrownStructure()
-    debugLog("=== EXPLORANDO ESTRUTURA THROWN ===")
-    
-    -- Procura em workspace
-    local thrown = workspace:FindFirstChild("Thrown")
-    if thrown then
-        debugLog("✓ Encontrado workspace.Thrown")
-        debugPrintChildren(thrown, 1)
-        
-        for _, model in ipairs(thrown:GetChildren()) do
-            if model:IsA("Model") then
-                debugLog("  Modelo encontrado: " .. model.Name)
-                debugPrintChildren(model, 2)
-            end
-        end
-    else
-        debugLog("✗ workspace.Thrown NÃO encontrado")
-        debugLog("Procurando alternativas em workspace:")
-        
-        -- Lista os principais folders do workspace
-        for _, child in ipairs(workspace:GetChildren()) do
-            if child:IsA("Folder") or child:IsA("Model") then
-                print("  - " .. child.Name .. " (" .. child.ClassName .. ")")
-            end
-        end
-    end
-end
-
--- Adicione esta função pública ao VFXManager (coloque depois das outras funções do VFXManager)
-function VFXManager.debugExploreStructure()
-    debugLog("=== EXPLORANDO TODA A ESTRUTURA ===")
-    exploreThrownStructure()
-    
-    debugLog("\n=== EXPLORANDO CHARACTER ===")
-    if PlayerData and PlayerData.character then
-        debugLog("Character encontrado: " .. PlayerData.character.Name)
-        debugPrintChildren(PlayerData.character, 1)
-        
-        -- Verifica especificamente o Barrage
-        local barrage = PlayerData.character:FindFirstChild("Barrage")
-        if barrage then
-            debugLog("✓ Barrage encontrado no character")
-        else
-            debugLog("✗ Barrage NÃO encontrado no character")
-        end
-    else
-        debugLog("✗ PlayerData.character não encontrado")
-    end
-    
-    debugLog("\n=== EXPLORANDO REPLICATEDSTORAGE ===")
-    if Services.ReplicatedStorage then
-        debugLog("ReplicatedStorage encontrado")
-        debugPrintChildren(Services.ReplicatedStorage, 1)
-        
-        -- Explora o caminho dos clones finisher
-        local resources = Services.ReplicatedStorage:FindFirstChild("Resources")
-        if resources then
-            debugLog("\n✓ Resources encontrado")
-            debugPrintChildren(resources, 2)
-            
-            local finisher = resources:FindFirstChild("Consecutive Punches Finisher")
-            if finisher then
-                debugLog("\n✓ Consecutive Punches Finisher encontrado")
-                debugPrintChildren(finisher, 3)
-                
-                local handClones = finisher:FindFirstChild("HandClones")
-                if handClones then
-                    debugLog("\n✓ HandClones encontrado")
-                    debugPrintChildren(handClones, 4)
-                else
-                    debugLog("\n✗ HandClones NÃO encontrado")
-                end
-            else
-                debugLog("\n✗ Consecutive Punches Finisher NÃO encontrado")
-            end
-        else
-            debugLog("\n✗ Resources NÃO encontrado")
-        end
-    end
-    
-    debugLog("\n=== EXPLORAÇÃO COMPLETA ===")
-end
--- ==================== FIM DO SISTEMA DE DEBUG ====================
-
 function VFXManager.createAdvancedEnergyEffect(hand, scale)
     if not hand then return nil end
     local attachment = Instance.new("Attachment")
@@ -576,26 +470,24 @@ function VFXManager.createAdvancedHandFire(duration, includeClones)
         if includeClones then
             task.spawn(function()
                 local barrageBind = PlayerData.character:WaitForChild("Barrage", 5)
-                
                 if barrageBind then
                     local thrown = workspace:WaitForChild("Thrown", 5)
-                    
                     if thrown then
-                        for attempt = 1, 25 do
-                            for _, model in pairs(thrown:GetChildren()) do
-                                if model:IsA("Model") then
-                                    local leftArm = model:FindFirstChild("Left Arm")
-                                    local rightArm = model:FindFirstChild("Right Arm")
+                        for attempt = 1, 30 do
+                            for _, modelo in ipairs(thrown:GetChildren()) do
+                                if modelo:IsA("Model") and modelo.Name == "Model" then
+                                    local leftArm = modelo:FindFirstChild("Left Arm")
+                                    local rightArm = modelo:FindFirstChild("Right Arm")
                                     
                                     if leftArm and leftArm:IsA("BasePart") then
-                                        local key = "thrown_left_" .. model.Name .. "_" .. tostring(math.random(10000))
+                                        local key = string.format("thrown_left_%s_%d", modelo:GetDebugId(), tick())
                                         if not effectGroups[key] then
                                             effectGroups[key] = VFXManager.createAdvancedEnergyEffect(leftArm, 0.8)
                                         end
                                     end
                                     
                                     if rightArm and rightArm:IsA("BasePart") then
-                                        local key = "thrown_right_" .. model.Name .. "_" .. tostring(math.random(10000))
+                                        local key = string.format("thrown_right_%s_%d", modelo:GetDebugId(), tick())
                                         if not effectGroups[key] then
                                             effectGroups[key] = VFXManager.createAdvancedEnergyEffect(rightArm, 0.8)
                                         end
@@ -616,7 +508,7 @@ function VFXManager.createAdvancedHandFire(duration, includeClones)
                     local handClones = finisher:FindFirstChild("HandClones")
                     if handClones then
                         for i = 1, 5 do
-                            local cloneName = "CLONE0" .. i
+                            local cloneName = string.format("CLONE%02d", i)
                             local clone = handClones:FindFirstChild(cloneName)
                             if clone then
                                 local cloneLeftArm = clone:FindFirstChild("Left Arm")
