@@ -28,7 +28,8 @@ local CONFIG = {
             useRedLight = false,
             useBlackFlashText = false,
             useAdvancedHandFire = true,
-            handFireDuration = 1.6
+            handFireDuration = 1.6,
+            includeClones = true
         },
         [10471336737] = {
             skillName = "SHOVE",
@@ -453,17 +454,49 @@ function VFXManager.createAdvancedEnergyEffect(hand, scale)
     return {attachment = attachment, effects = effects}
 end
 
-function VFXManager.createAdvancedHandFire(duration)
+function VFXManager.createAdvancedHandFire(duration, includeClones)
     pcall(function()
         local leftHand = PlayerData.character:FindFirstChild("Left Arm") or PlayerData.character:FindFirstChild("LeftHand") or PlayerData.character:FindFirstChild("LeftLowerArm")
         local rightHand = PlayerData.character:FindFirstChild("Right Arm") or PlayerData.character:FindFirstChild("RightHand") or PlayerData.character:FindFirstChild("RightLowerArm")
         local effectGroups = {}
+        
         if leftHand then
             effectGroups.left = VFXManager.createAdvancedEnergyEffect(leftHand, 0.8)
         end
         if rightHand then
             effectGroups.right = VFXManager.createAdvancedEnergyEffect(rightHand, 0.8)
         end
+        
+        if includeClones then
+            local repStorage = Services.ReplicatedStorage
+            local resources = repStorage:FindFirstChild("Resources")
+            if resources then
+                local finisher = resources:FindFirstChild("Consecutive Punches Finisher")
+                if finisher then
+                    local handClones = finisher:FindFirstChild("HandClones")
+                    if handClones then
+                        for i = 1, 5 do
+                            local cloneName = "CLONE0" .. i
+                            local clone = handClones:FindFirstChild(cloneName)
+                            if clone then
+                                local cloneLeftArm = clone:FindFirstChild("Left Arm")
+                                local cloneRightArm = clone:FindFirstChild("Right Arm")
+                                
+                                if cloneLeftArm then
+                                    local key = "clone" .. i .. "_left"
+                                    effectGroups[key] = VFXManager.createAdvancedEnergyEffect(cloneLeftArm, 0.8)
+                                end
+                                if cloneRightArm then
+                                    local key = "clone" .. i .. "_right"
+                                    effectGroups[key] = VFXManager.createAdvancedEnergyEffect(cloneRightArm, 0.8)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        
         task.wait(duration)
         for _, group in pairs(effectGroups) do
             if group then
@@ -654,7 +687,7 @@ function AnimationManager.setupReplacement(originalId, config)
             end
             if config.useAdvancedHandFire then
                 task.spawn(function()
-                    VFXManager.createAdvancedHandFire(config.handFireDuration or 2)
+                    VFXManager.createAdvancedHandFire(config.handFireDuration or 2, config.includeClones or false)
                 end)
             end
             if config.useCustomVFX then
