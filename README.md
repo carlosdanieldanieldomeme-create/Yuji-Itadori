@@ -474,35 +474,58 @@ function VFXManager.createCustomBlackFlash()
     pcall(function()
         local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
-        local vfxSource = Services.ReplicatedStorage:FindFirstChild("Emotes")
-        if vfxSource then
-            vfxSource = vfxSource:FindFirstChild("VFX")
-        end
-        if vfxSource then
-            vfxSource = vfxSource:FindFirstChild("VfxMods")
-        end
-        if vfxSource then
-            vfxSource = vfxSource:FindFirstChild("Flasher")
-        end
-        if vfxSource then
-            vfxSource = vfxSource:FindFirstChild("vfx")
-        end
-        if vfxSource then
-            vfxSource = vfxSource:FindFirstChild("LastImpactFx")
-        end
-        if vfxSource then
-            vfxSource = vfxSource:FindFirstChild("Attachment")
-        end
+        
+        local vfxSource = Services.ReplicatedStorage.Emotes.VFX.VfxMods.Flasher.vfx.LastImpactFx.Attachment
         if not vfxSource then return end
+        
         local vfxClone = vfxSource:Clone()
         vfxClone.Parent = hrp
+        
+        if vfxClone:IsA("Attachment") then
+            vfxClone.Position = Vector3.new(0, 1, -2)
+            vfxClone.Orientation = Vector3.new(0, 0, 0)
+        end
+        
+        local emissionDuration = 1.5
+        local fadeOutDuration = 1.5
+        
         for _, child in ipairs(vfxClone:GetChildren()) do
             if child:IsA("ParticleEmitter") then
-                child:Emit(15)
                 child.Enabled = true
+                child.Rate = 100
+                
+                child.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 1),
+                    NumberSequenceKeypoint.new(0.15, 0.2),
+                    NumberSequenceKeypoint.new(0.3, 0),
+                    NumberSequenceKeypoint.new(0.7, 0),
+                    NumberSequenceKeypoint.new(0.85, 0.3),
+                    NumberSequenceKeypoint.new(1, 1)
+                })
+                
+                child.Lifetime = NumberRange.new(1, 1.8)
+                
+                child.Size = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0),
+                    NumberSequenceKeypoint.new(0.2, 1),
+                    NumberSequenceKeypoint.new(0.8, 0.8),
+                    NumberSequenceKeypoint.new(1, 0)
+                })
             end
         end
-        Services.Debris:AddItem(vfxClone, 3)
+        
+        task.spawn(function()
+            task.wait(emissionDuration)
+            
+            for _, child in ipairs(vfxClone:GetChildren()) do
+                if child:IsA("ParticleEmitter") then
+                    child.Enabled = false
+                end
+            end
+            
+            task.wait(fadeOutDuration)
+            vfxClone:Destroy()
+        end)
     end)
 end
 
