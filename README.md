@@ -29,7 +29,7 @@ local CONFIG = {
             useRedLight = false,
             useBlackFlashText = false,
             useAdvancedHandFire = true,
-            handFireDuration = 1.5
+            handFireDuration = 1.6
         },
         [10471336737] = {
             skillName = "SHOVE",
