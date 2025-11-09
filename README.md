@@ -36,13 +36,10 @@ local CONFIG = {
             animationId = 18179181663,
             speed = 1,
             timePos = 0,
-            useFOV = true,
+            useFOV = false,
             useRedLight = false,
             useBlackFlashText = false,
-            useAttackVFX = true,
-            vfxDelay = 0.2,
-            vfxDuration = 1.2,
-            vfxType = "shockwave"
+            useAttackVFX = false
         },
         [10470104242] = {
             skillName = "UPPERCUT",
@@ -52,10 +49,7 @@ local CONFIG = {
             useFOV = false,
             useRedLight = false,
             useBlackFlashText = false,
-            useAttackVFX = true,
-            vfxDelay = 0.25,
-            vfxDuration = 1.5,
-            vfxType = "uppercut"
+            useAttackVFX = false
         },
         [12510170988] = {
             skillName = "SKILL 5",
@@ -591,137 +585,6 @@ function VFXManager.createBlackFlash(parent, duration)
     end
 end
 
-function VFXManager.createShockwave(parent, duration)
-    local success, err = pcall(function()
-        local attachment = Instance.new("Attachment")
-        attachment.Name = "ShockwaveAttachment"
-        attachment.Parent = parent
-        
-        local wave = Instance.new("ParticleEmitter")
-        wave.Name = "ShockwaveRing"
-        wave.Parent = attachment
-        wave.Texture = "rbxassetid://11841348746"
-        wave.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(100, 200, 255)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 100, 200))
-        })
-        wave.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.5),
-            NumberSequenceKeypoint.new(0.3, 5),
-            NumberSequenceKeypoint.new(1, 8)
-        })
-        wave.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0),
-            NumberSequenceKeypoint.new(0.5, 0.3),
-            NumberSequenceKeypoint.new(1, 1)
-        })
-        wave.Lifetime = NumberRange.new(0.8, 1.2)
-        wave.Rate = 80
-        wave.Speed = NumberRange.new(10, 15)
-        wave.SpreadAngle = Vector2.new(5, 5)
-        wave.Rotation = NumberRange.new(0, 360)
-        wave.RotSpeed = NumberRange.new(-100, 100)
-        wave.LightEmission = 0.8
-        wave.Acceleration = Vector3.new(0, -5, 0)
-        wave.Enabled = true
-        
-        local impact = Instance.new("ParticleEmitter")
-        impact.Name = "ShockwaveImpact"
-        impact.Parent = attachment
-        impact.Texture = "rbxassetid://11534281007"
-        impact.Color = ColorSequence.new(CONFIG.COLORS.glow)
-        impact.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 1),
-            NumberSequenceKeypoint.new(0.5, 2),
-            NumberSequenceKeypoint.new(1, 0.5)
-        })
-        impact.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.3),
-            NumberSequenceKeypoint.new(1, 1)
-        })
-        impact.Lifetime = NumberRange.new(0.5, 0.8)
-        impact.Rate = 100
-        impact.Speed = NumberRange.new(5, 10)
-        impact.SpreadAngle = Vector2.new(30, 30)
-        impact.LightEmission = 0.9
-        impact.Enabled = true
-        
-        task.wait(duration)
-        attachment:Destroy()
-    end)
-    
-    if not success then
-        warn("Failed to create shockwave VFX: " .. tostring(err))
-    end
-end
-
-function VFXManager.createUppercut(parent, duration)
-    local success, err = pcall(function()
-        local attachment = Instance.new("Attachment")
-        attachment.Name = "UppercutAttachment"
-        attachment.Parent = parent
-        
-        local spiral = Instance.new("ParticleEmitter")
-        spiral.Name = "UppercutSpiral"
-        spiral.Parent = attachment
-        spiral.Texture = "rbxassetid://11534281007"
-        spiral.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 200)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 200, 50)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 150, 0))
-        })
-        spiral.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 1),
-            NumberSequenceKeypoint.new(0.5, 2.5),
-            NumberSequenceKeypoint.new(1, 0.5)
-        })
-        spiral.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.2),
-            NumberSequenceKeypoint.new(0.7, 0.6),
-            NumberSequenceKeypoint.new(1, 1)
-        })
-        spiral.Lifetime = NumberRange.new(1, 1.5)
-        spiral.Rate = 120
-        spiral.Speed = NumberRange.new(10, 20)
-        spiral.SpreadAngle = Vector2.new(15, 15)
-        spiral.Rotation = NumberRange.new(0, 360)
-        spiral.RotSpeed = NumberRange.new(-300, 300)
-        spiral.LightEmission = 1
-        spiral.Acceleration = Vector3.new(0, 15, 0)
-        spiral.Drag = 1
-        spiral.Enabled = true
-        
-        local trail = Instance.new("ParticleEmitter")
-        trail.Name = "UppercutTrail"
-        trail.Parent = attachment
-        trail.Texture = "rbxassetid://11841348746"
-        trail.Color = ColorSequence.new(Color3.fromRGB(255, 220, 100))
-        trail.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.8),
-            NumberSequenceKeypoint.new(1, 0.3)
-        })
-        trail.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.3),
-            NumberSequenceKeypoint.new(1, 1)
-        })
-        trail.Lifetime = NumberRange.new(0.6, 1)
-        trail.Rate = 150
-        trail.Speed = NumberRange.new(8, 15)
-        trail.SpreadAngle = Vector2.new(20, 20)
-        trail.LightEmission = 1
-        trail.Acceleration = Vector3.new(0, 10, 0)
-        trail.Enabled = true
-        
-        task.wait(duration)
-        attachment:Destroy()
-    end)
-    
-    if not success then
-        warn("Failed to create uppercut VFX: " .. tostring(err))
-    end
-end
-
 function VFXManager.trigger(vfxType, duration)
     local success, err = pcall(function()
         local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
@@ -729,10 +592,6 @@ function VFXManager.trigger(vfxType, duration)
         
         if vfxType == "blackFlash" then
             VFXManager.createBlackFlash(hrp, duration)
-        elseif vfxType == "shockwave" then
-            VFXManager.createShockwave(hrp, duration)
-        elseif vfxType == "uppercut" then
-            VFXManager.createUppercut(hrp, duration)
         end
     end)
     
