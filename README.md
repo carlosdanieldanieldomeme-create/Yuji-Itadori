@@ -282,16 +282,7 @@ local function createBlackFlashNotification()
     )
     tweenIn:Play()
     
-    local pulseTween = game:GetService("TweenService"):Create(
-        blackFlashText,
-        TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-        {ImageTransparency = 0.3}
-    )
-    pulseTween:Play()
-    
     task.wait(2)
-    
-    pulseTween:Cancel()
     
     local tweenOut = game:GetService("TweenService"):Create(
         billboard,
