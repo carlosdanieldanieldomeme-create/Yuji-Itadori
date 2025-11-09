@@ -7,8 +7,8 @@ local Services = {
 
 local CONFIG = {
     ANIMATION_REPLACEMENTS = {
-        [10468665991] = {
-            skillName = "NORMAL PUNCH", 
+      [10468665991] = {
+            skillName = "NORMAL PUNCH",
             animationId = 17186602996,
             speed = 1,
             timePos = 0,
@@ -16,7 +16,9 @@ local CONFIG = {
             useFOV = true,
             useRedLight = true,
             useBlackFlashText = true,
-            useCustomVFX = true
+            blackFlashDelay = 1,
+            useCustomVFX = true,
+            vfxDelay = 1
         },
         [10466974800] = {
             skillName = "CONSECUTIVE PUNCHES",
@@ -265,7 +267,6 @@ local NotificationManager = {}
 
 function NotificationManager.createBlackFlash()
     pcall(function()
-        task.wait(1)
         local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
         local sound = Instance.new("Sound")
@@ -721,9 +722,15 @@ function AnimationManager.setupReplacement(originalId, config)
                     VFXManager.createAdvancedHandFire(config.handFireDuration or 2, config.includeClones or false)
                 end)
             end
+            if config.useBlackFlashText then
+                task.spawn(function()
+                    task.wait(config.blackFlashDelay or 0)
+                    NotificationManager.createBlackFlash()
+                end)
+            end
             if config.useCustomVFX then
                 task.spawn(function()
-                    task.wait(config.vfxDelay or 0.2)
+                    task.wait(config.vfxDelay or 0)
                     VFXManager.trigger("blackFlash", 1)
                 end)
             end
@@ -732,9 +739,6 @@ function AnimationManager.setupReplacement(originalId, config)
             end
             if config.useRedLight then
                 task.spawn(LightingManager.applyRedLight)
-            end
-            if config.useBlackFlashText then
-                task.spawn(NotificationManager.createBlackFlash)
             end
         end)
     end)
