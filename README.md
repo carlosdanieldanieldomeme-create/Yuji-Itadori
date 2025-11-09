@@ -468,34 +468,26 @@ function VFXManager.createAdvancedHandFire(duration, includeClones)
         end
         
         if includeClones then
-            -- Procura BarrageBind no workspace
-            local function findBarrageBindInWorkspace()
-                for _, obj in pairs(workspace:GetDescendants()) do
-                    if obj.Name == "BarrageBind" then
-                        return obj
-                    end
-                end
-                return nil
-            end
-            
-            -- Adiciona efeitos nos braços do BarrageBind
             task.spawn(function()
-                for attempt = 1, 10 do
-                    local barrageBind = findBarrageBindInWorkspace()
-                    if barrageBind then
-                        for _, child in pairs(barrageBind:GetDescendants()) do
-                            if child.Name == "Left Arm" or child.Name == "Right Arm" then
-                                local key = "barrage_" .. child.Name .. "_" .. child:GetFullName()
-                                effectGroups[key] = VFXManager.createAdvancedEnergyEffect(child, 0.8)
+                local barrageBind = PlayerData.character:WaitForChild("Barrage", 5)
+                
+                if barrageBind then
+                    for attempt = 1, 20 do
+                        for _, child in pairs(PlayerData.character:GetDescendants()) do
+                            if child.Name == "BarrageBind" or child.Name:match("Barrage") or child.Name:match("Clone") then
+                                for _, limb in pairs(child:GetDescendants()) do
+                                    if limb.Name == "Left Arm" or limb.Name == "Right Arm" then
+                                        local key = "barrage_" .. limb.Name .. "_" .. tostring(math.random(1000))
+                                        effectGroups[key] = VFXManager.createAdvancedEnergyEffect(limb, 0.8)
+                                    end
+                                end
                             end
                         end
-                        break
+                        task.wait(0.1)
                     end
-                    task.wait(0.1)
                 end
             end)
             
-            -- Código original para HandClones
             local repStorage = Services.ReplicatedStorage
             local resources = repStorage:FindFirstChild("Resources")
             if resources then
