@@ -481,6 +481,7 @@ function VFXManager.createCustomBlackFlash()
         local vfxClone = vfxSource:Clone()
         vfxClone.Parent = hrp
         
+        -- ADICIONAR POSIÇÃO AQUI
         if vfxClone:IsA("Attachment") then
             vfxClone.Position = Vector3.new(0, 1, -2)
             vfxClone.Orientation = Vector3.new(0, 0, 0)
@@ -488,36 +489,12 @@ function VFXManager.createCustomBlackFlash()
         
         for _, child in ipairs(vfxClone:GetChildren()) do
             if child:IsA("ParticleEmitter") then
+                child:Emit(15)
                 child.Enabled = true
-                child.Rate = 100
-                
-                -- NÃO MODIFICAR O SIZE - Mantém o tamanho original
-                -- Apenas adiciona transparência gradual
-                child.Transparency = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 1),
-                    NumberSequenceKeypoint.new(0.15, 0.2),
-                    NumberSequenceKeypoint.new(0.3, 0),
-                    NumberSequenceKeypoint.new(0.7, 0),
-                    NumberSequenceKeypoint.new(0.85, 0.3),
-                    NumberSequenceKeypoint.new(1, 1)
-                })
-                
-                child.Lifetime = NumberRange.new(1, 1.8)
             end
         end
         
-        task.spawn(function()
-            task.wait(1.5)
-            
-            for _, child in ipairs(vfxClone:GetChildren()) do
-                if child:IsA("ParticleEmitter") then
-                    child.Enabled = false
-                end
-            end
-            
-            task.wait(1.5)
-            vfxClone:Destroy()
-        end)
+        Services.Debris:AddItem(vfxClone, 3)
     end)
 end
 function VFXManager.trigger(vfxType, duration)
