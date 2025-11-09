@@ -665,35 +665,44 @@ function VFXManager.createAdvancedHandFire(duration, includeClones)
                     end
                 end)
                 
-                local repStorage = Services.ReplicatedStorage
-                local resources = repStorage:FindFirstChild("Resources")
-                if resources then
-                    local finisher = resources:FindFirstChild("Consecutive Punches Finisher")
-                    if finisher then
-                        local handClones = finisher:FindFirstChild("HandClones")
-                        if handClones then
-                            for i = 1, 5 do
-                                if not validateCharacter() then break end
-                                
-                                local cloneName = string.format("CLONE%02d", i)
-                                local clone = handClones:FindFirstChild(cloneName)
-                                if clone then
-                                    local cloneLeftArm = clone:FindFirstChild("Left Arm")
-                                    local cloneRightArm = clone:FindFirstChild("Right Arm")
+                task.spawn(function()
+                    local repStorage = Services.ReplicatedStorage
+                    local resources = repStorage:FindFirstChild("Resources")
+                    if resources then
+                        local finisher = resources:FindFirstChild("Consecutive Punches Finisher")
+                        if finisher then
+                            local handClones = finisher:FindFirstChild("HandClones")
+                            if handClones then
+                                for attempt = 1, 40 do
+                                    if not validateCharacter() then break end
                                     
-                                    if cloneLeftArm then
-                                        local key = "clone" .. i .. "_left"
-                                        effectGroups[key] = VFXManager.createAdvancedEnergyEffect(cloneLeftArm, 0.8)
+                                    for i = 1, 5 do
+                                        local cloneName = string.format("CLONE%02d", i)
+                                        local clone = handClones:FindFirstChild(cloneName)
+                                        if clone and clone:IsDescendantOf(workspace) then
+                                            local cloneLeftArm = clone:FindFirstChild("Left Arm")
+                                            local cloneRightArm = clone:FindFirstChild("Right Arm")
+                                            
+                                            if cloneLeftArm and cloneLeftArm:IsA("BasePart") then
+                                                local key = "clone" .. i .. "_left_" .. tick()
+                                                if not effectGroups[key] then
+                                                    effectGroups[key] = VFXManager.createAdvancedEnergyEffect(cloneLeftArm, 0.8)
+                                                end
+                                            end
+                                            if cloneRightArm and cloneRightArm:IsA("BasePart") then
+                                                local key = "clone" .. i .. "_right_" .. tick()
+                                                if not effectGroups[key] then
+                                                    effectGroups[key] = VFXManager.createAdvancedEnergyEffect(cloneRightArm, 0.8)
+                                                end
+                                            end
+                                        end
                                     end
-                                    if cloneRightArm then
-                                        local key = "clone" .. i .. "_right"
-                                        effectGroups[key] = VFXManager.createAdvancedEnergyEffect(cloneRightArm, 0.8)
-                                    end
+                                    task.wait(0.05)
                                 end
                             end
                         end
                     end
-                end
+                end)
             end
             
             task.wait(duration)
