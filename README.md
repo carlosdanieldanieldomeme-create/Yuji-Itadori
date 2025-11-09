@@ -8,7 +8,7 @@ local ANIMATION_REPLACEMENTS = {
         useFOV = true,
         useRedLight = true,
         useBlackFlashText = true,
-        -- NOVO: Sistema de partículas
+        -- VFX de ataque
         useAttackVFX = true,
         vfxDelay = 0.15,
         vfxDuration = 0.8,
@@ -22,7 +22,10 @@ local ANIMATION_REPLACEMENTS = {
         soundId = nil,
         useFOV = false,
         useRedLight = false,
-        useBlackFlashText = false
+        useBlackFlashText = false,
+        -- NOVO: Fogo azul nas mãos durante o ataque
+        useHandFire = true,
+        handFireDuration = 2
     },
     [10471336737] = {
         skillName = "SHOVE",
@@ -33,7 +36,7 @@ local ANIMATION_REPLACEMENTS = {
         useFOV = true,
         useRedLight = false,
         useBlackFlashText = false,
-        -- NOVO: VFX para Shove
+        -- VFX de ataque
         useAttackVFX = true,
         vfxDelay = 0.2,
         vfxDuration = 1.2,
@@ -48,7 +51,7 @@ local ANIMATION_REPLACEMENTS = {
         useFOV = false,
         useRedLight = false,
         useBlackFlashText = false,
-        -- NOVO: VFX para Uppercut
+        -- VFX de ataque
         useAttackVFX = true,
         vfxDelay = 0.25,
         vfxDuration = 1.5,
@@ -151,19 +154,13 @@ local COLORS = {
     bright = Color3.fromRGB(255, 255, 255),
     glow = Color3.fromRGB(150, 230, 255),
     dark = Color3.fromRGB(0, 0, 0),
-    darkBlue = Color3.fromRGB(0, 50, 80),
-    -- NOVO: Cores para VFX de ataques
-    blackFlash = Color3.fromRGB(255, 50, 50),
-    shockwave = Color3.fromRGB(100, 200, 255),
-    uppercut = Color3.fromRGB(255, 200, 50)
+    darkBlue = Color3.fromRGB(0, 50, 80)
 }
 
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
-
-local effectGroups = {}
 
 local function applyFont(label)
     if fontConfig.Enabled and label:IsA("TextLabel") then
@@ -293,7 +290,139 @@ local function createBlackFlashNotification()
     game:GetService("Debris"):AddItem(billboard, 0.3)
 end
 
--- NOVO: Sistema de VFX por ataque
+-- NOVO: Fogo azul temporário nas mãos (só para CONSECUTIVE PUNCHES)
+local function createTemporaryHandFire(duration)
+    local leftHand = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand") or character:FindFirstChild("LeftLowerArm")
+    local rightHand = character:FindFirstChild("Right Arm") or character:FindFirstChild("RightHand") or character:FindFirstChild("RightLowerArm")
+    
+    local attachments = {}
+    
+    local function createHandFire(hand)
+        if not hand then return nil end
+        
+        local attachment = Instance.new("Attachment")
+        attachment.Name = "TempHandFireAttachment"
+        attachment.Position = Vector3.new(0, -0.5, 0)
+        attachment.Parent = hand
+        
+        -- Fogo azul escuro
+        local darkFire = Instance.new("ParticleEmitter")
+        darkFire.Name = "DarkBlueFire"
+        darkFire.Parent = attachment
+        darkFire.Texture = "rbxassetid://11534281007"
+        darkFire.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+            ColorSequenceKeypoint.new(0.7, Color3.fromRGB(0, 50, 100)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 200, 255))
+        })
+        darkFire.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.8),
+            NumberSequenceKeypoint.new(0.3, 2),
+            NumberSequenceKeypoint.new(0.7, 1.5),
+            NumberSequenceKeypoint.new(1, 0.4)
+        })
+        darkFire.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.3),
+            NumberSequenceKeypoint.new(0.4, 0.5),
+            NumberSequenceKeypoint.new(0.8, 0.8),
+            NumberSequenceKeypoint.new(1, 1)
+        })
+        darkFire.Lifetime = NumberRange.new(0.6, 1)
+        darkFire.Rate = 100
+        darkFire.Speed = NumberRange.new(1, 2.5)
+        darkFire.SpreadAngle = Vector2.new(25, 25)
+        darkFire.Rotation = NumberRange.new(0, 360)
+        darkFire.RotSpeed = NumberRange.new(-80, 80)
+        darkFire.LightEmission = 0.3
+        darkFire.Acceleration = Vector3.new(0, 2, 0)
+        darkFire.Drag = 3
+        darkFire.LockedToPart = true
+        darkFire.Enabled = true
+        
+        -- Núcleo brilhante azul
+        local core = Instance.new("ParticleEmitter")
+        core.Name = "BlueCore"
+        core.Parent = attachment
+        core.Texture = "rbxassetid://11534281007"
+        core.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+            ColorSequenceKeypoint.new(0.3, Color3.fromRGB(150, 230, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 200, 255))
+        })
+        core.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.4),
+            NumberSequenceKeypoint.new(0.2, 1.2),
+            NumberSequenceKeypoint.new(0.6, 1),
+            NumberSequenceKeypoint.new(1, 0.2)
+        })
+        core.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0),
+            NumberSequenceKeypoint.new(0.3, 0.1),
+            NumberSequenceKeypoint.new(0.7, 0.5),
+            NumberSequenceKeypoint.new(1, 1)
+        })
+        core.Lifetime = NumberRange.new(0.4, 0.7)
+        core.Rate = 150
+        core.Speed = NumberRange.new(2, 4)
+        core.SpreadAngle = Vector2.new(15, 15)
+        core.Rotation = NumberRange.new(0, 360)
+        core.RotSpeed = NumberRange.new(-80, 80)
+        core.LightEmission = 1
+        core.Acceleration = Vector3.new(0, 3, 0)
+        core.Drag = 2.5
+        core.LockedToPart = true
+        core.Enabled = true
+        
+        -- Partículas externas azuis
+        local outer = Instance.new("ParticleEmitter")
+        outer.Name = "BlueOuter"
+        outer.Parent = attachment
+        outer.Texture = "rbxassetid://11534281007"
+        outer.Color = ColorSequence.new(Color3.fromRGB(0, 200, 255))
+        outer.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.6),
+            NumberSequenceKeypoint.new(0.3, 1.5),
+            NumberSequenceKeypoint.new(0.7, 1.2),
+            NumberSequenceKeypoint.new(1, 0)
+        })
+        outer.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.2),
+            NumberSequenceKeypoint.new(0.4, 0.3),
+            NumberSequenceKeypoint.new(0.8, 0.7),
+            NumberSequenceKeypoint.new(1, 1)
+        })
+        outer.Lifetime = NumberRange.new(0.5, 0.9)
+        outer.Rate = 120
+        outer.Speed = NumberRange.new(1.5, 3)
+        outer.SpreadAngle = Vector2.new(20, 20)
+        outer.Rotation = NumberRange.new(0, 360)
+        outer.RotSpeed = NumberRange.new(-100, 100)
+        outer.LightEmission = 0.9
+        outer.Acceleration = Vector3.new(0, 2.5, 0)
+        outer.Drag = 2
+        outer.LockedToPart = true
+        outer.Enabled = true
+        
+        return attachment
+    end
+    
+    if leftHand then
+        table.insert(attachments, createHandFire(leftHand))
+    end
+    if rightHand then
+        table.insert(attachments, createHandFire(rightHand))
+    end
+    
+    task.wait(duration)
+    
+    for _, attachment in pairs(attachments) do
+        if attachment then
+            attachment:Destroy()
+        end
+    end
+end
+
+-- Sistema de VFX por ataque (Black Flash, Shockwave, Uppercut)
 local function createBlackFlashVFX(parent, duration)
     local attachment = Instance.new("Attachment")
     attachment.Name = "BlackFlashAttachment"
@@ -448,7 +577,7 @@ local function createUppercutVFX(parent, duration)
     spiral.Rotation = NumberRange.new(0, 360)
     spiral.RotSpeed = NumberRange.new(-300, 300)
     spiral.LightEmission = 1
-    spiral.Acceleration = Vector3.new(0, 15, 0)  -- Sobe forte
+    spiral.Acceleration = Vector3.new(0, 15, 0)
     spiral.Drag = 1
     spiral.Enabled = true
     
@@ -491,164 +620,6 @@ local function triggerAttackVFX(vfxType, duration)
     end
 end
 
-local function createAdvancedEnergyEffect(hand, scale)
-    if not hand then return nil end
-    local attachment = Instance.new("Attachment")
-    attachment.Name = "EnergyAttachment"
-    attachment.Position = Vector3.new(0, -0.5, 0)
-    attachment.Parent = hand
-    local effects = {}
-    scale = scale or 1
-    local darkFire = Instance.new("ParticleEmitter")
-    darkFire.Name = "DarkFire"
-    darkFire.Parent = attachment
-    darkFire.Texture = "rbxassetid://11534281007"
-    darkFire.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, COLORS.dark), ColorSequenceKeypoint.new(0.7, COLORS.dark), ColorSequenceKeypoint.new(1, COLORS.primary)})
-    darkFire.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 1 * scale), NumberSequenceKeypoint.new(0.3, 2.5 * scale), NumberSequenceKeypoint.new(0.7, 2 * scale), NumberSequenceKeypoint.new(1, 0.5 * scale)})
-    darkFire.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(0.4, 0.5), NumberSequenceKeypoint.new(0.8, 0.8), NumberSequenceKeypoint.new(1, 1)})
-    darkFire.Lifetime = NumberRange.new(0.6, 1)
-    darkFire.Rate = 80 * scale
-    darkFire.Speed = NumberRange.new(1, 2.5)
-    darkFire.SpreadAngle = Vector2.new(25, 25)
-    darkFire.Rotation = NumberRange.new(0, 360)
-    darkFire.RotSpeed = NumberRange.new(-80, 80)
-    darkFire.LightEmission = 0
-    darkFire.ZOffset = -0.1
-    darkFire.Acceleration = Vector3.new(0, 2, 0)
-    darkFire.Drag = 3
-    darkFire.VelocityInheritance = 0
-    darkFire.LockedToPart = true
-    darkFire.TimeScale = 1
-    darkFire.EmissionDirection = Enum.NormalId.Top
-    darkFire.WindAffectsDrag = false
-    darkFire.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
-    darkFire.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
-    darkFire.FlipbookStartRandom = false
-    table.insert(effects, darkFire)
-    local core = Instance.new("ParticleEmitter")
-    core.Name = "EnergyCore"
-    core.Parent = attachment
-    core.Texture = "rbxassetid://11534281007"
-    core.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, COLORS.bright), ColorSequenceKeypoint.new(0.3, COLORS.glow), ColorSequenceKeypoint.new(1, COLORS.primary)})
-    core.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.5 * scale), NumberSequenceKeypoint.new(0.2, 1.5 * scale), NumberSequenceKeypoint.new(0.6, 1.2 * scale), NumberSequenceKeypoint.new(1, 0.3 * scale)})
-    core.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.3, 0.1), NumberSequenceKeypoint.new(0.7, 0.5), NumberSequenceKeypoint.new(1, 1)})
-    core.Lifetime = NumberRange.new(0.4, 0.7)
-    core.Rate = 120 * scale
-    core.Speed = NumberRange.new(2, 4)
-    core.SpreadAngle = Vector2.new(15, 15)
-    core.Rotation = NumberRange.new(0, 360)
-    core.RotSpeed = NumberRange.new(-80, 80)
-    core.LightEmission = 1
-    core.LightInfluence = 0
-    core.ZOffset = 0.3
-    core.Acceleration = Vector3.new(0, 3, 0)
-    core.Drag = 2.5
-    core.VelocityInheritance = 0
-    core.LockedToPart = true
-    core.TimeScale = 1
-    core.WindAffectsDrag = false
-    core.EmissionDirection = Enum.NormalId.Top
-    core.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
-    core.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
-    core.FlipbookStartRandom = false
-    table.insert(effects, core)
-    local outer = Instance.new("ParticleEmitter")
-    outer.Name = "EnergyOuter"
-    outer.Parent = attachment
-    outer.Texture = "rbxassetid://11534281007"
-    outer.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, COLORS.primary), ColorSequenceKeypoint.new(0.5, COLORS.secondary), ColorSequenceKeypoint.new(1, COLORS.primary)})
-    outer.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.8 * scale), NumberSequenceKeypoint.new(0.3, 2 * scale), NumberSequenceKeypoint.new(0.7, 1.5 * scale), NumberSequenceKeypoint.new(1, 0)})
-    outer.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(0.4, 0.3), NumberSequenceKeypoint.new(0.8, 0.7), NumberSequenceKeypoint.new(1, 1)})
-    outer.Lifetime = NumberRange.new(0.5, 0.9)
-    outer.Rate = 100 * scale
-    outer.Speed = NumberRange.new(1.5, 3)
-    outer.SpreadAngle = Vector2.new(20, 20)
-    outer.Rotation = NumberRange.new(0, 360)
-    outer.RotSpeed = NumberRange.new(-100, 100)
-    outer.LightEmission = 0.9
-    outer.ZOffset = 0.2
-    outer.Acceleration = Vector3.new(0, 2.5, 0)
-    outer.Drag = 2
-    outer.VelocityInheritance = 0
-    outer.LockedToPart = true
-    outer.TimeScale = 1
-    outer.EmissionDirection = Enum.NormalId.Top
-    outer.WindAffectsDrag = false
-    outer.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
-    outer.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
-    outer.FlipbookStartRandom = false
-    table.insert(effects, outer)
-    local baseGlow = Instance.new("ParticleEmitter")
-    baseGlow.Name = "BaseGlow"
-    baseGlow.Parent = attachment
-    baseGlow.Texture = "rbxassetid://11841348746"
-    baseGlow.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, COLORS.bright), ColorSequenceKeypoint.new(0.5, COLORS.glow), ColorSequenceKeypoint.new(1, COLORS.primary)})
-    baseGlow.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 1.2 * scale), NumberSequenceKeypoint.new(0.4, 1.8 * scale), NumberSequenceKeypoint.new(1, 0)})
-    baseGlow.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(0.5, 0.6), NumberSequenceKeypoint.new(1, 1)})
-    baseGlow.Lifetime = NumberRange.new(0.2, 0.4)
-    baseGlow.Rate = 80 * scale
-    baseGlow.Speed = NumberRange.new(0.5, 1.5)
-    baseGlow.SpreadAngle = Vector2.new(25, 25)
-    baseGlow.Rotation = NumberRange.new(0, 360)
-    baseGlow.RotSpeed = NumberRange.new(-150, 150)
-    baseGlow.LightEmission = 1
-    baseGlow.ZOffset = 0.1
-    baseGlow.Acceleration = Vector3.new(0, 2, 0)
-    baseGlow.Drag = 1
-    baseGlow.VelocityInheritance = 0
-    baseGlow.LockedToPart = true
-    baseGlow.TimeScale = 1
-    baseGlow.EmissionDirection = Enum.NormalId.Top
-    baseGlow.WindAffectsDrag = false
-    baseGlow.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
-    baseGlow.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
-    baseGlow.FlipbookStartRandom = false
-    table.insert(effects, baseGlow)
-    local wisps = Instance.new("ParticleEmitter")
-    wisps.Name = "EnergyWisps"
-    wisps.Parent = attachment
-    wisps.Texture = "rbxassetid://11841348746"
-    wisps.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, COLORS.glow), ColorSequenceKeypoint.new(1, COLORS.secondary)})
-    wisps.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.3 * scale), NumberSequenceKeypoint.new(0.5, 0.6 * scale), NumberSequenceKeypoint.new(1, 0.2 * scale)})
-    wisps.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(0.6, 0.6), NumberSequenceKeypoint.new(1, 1)})
-    wisps.Lifetime = NumberRange.new(0.6, 1)
-    wisps.Rate = 60 * scale
-    wisps.Speed = NumberRange.new(3, 5)
-    wisps.SpreadAngle = Vector2.new(12, 12)
-    wisps.Rotation = NumberRange.new(0, 360)
-    wisps.RotSpeed = NumberRange.new(-200, 200)
-    wisps.LightEmission = 1
-    wisps.ZOffset = 0.4
-    wisps.Acceleration = Vector3.new(0, 4, 0)
-    wisps.Drag = 1.8
-    wisps.VelocityInheritance = 0
-    wisps.LockedToPart = true
-    wisps.TimeScale = 1
-    wisps.EmissionDirection = Enum.NormalId.Top
-    wisps.WindAffectsDrag = false
-    wisps.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
-    wisps.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
-    wisps.FlipbookStartRandom = false
-    table.insert(effects, wisps)
-    return {attachment = attachment, effects = effects}
-end
-
-local function setupEnergyEffects()
-    for _, group in pairs(effectGroups) do
-        if group then
-            for _, effect in pairs(group.effects) do
-                if typeof(effect) == "Instance" then effect:Destroy() end
-            end
-            if group.attachment then group.attachment:Destroy() end
-        end
-    end
-    effectGroups = {}
-    local leftHand = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand") or character:FindFirstChild("LeftLowerArm")
-    local rightHand = character:FindFirstChild("Right Arm") or character:FindFirstChild("RightHand") or character:FindFirstChild("RightLowerArm")
-    if leftHand then effectGroups.left = createAdvancedEnergyEffect(leftHand, 0.8) end
-    if rightHand then effectGroups.right = createAdvancedEnergyEffect(rightHand, 0.8) end
-end
-
 local function setupAnimationReplacement(originalId, config)
     humanoid.AnimationPlayed:Connect(function(animationTrack)
         if animationTrack.Animation.AnimationId == "rbxassetid://" .. originalId then
@@ -663,6 +634,7 @@ local function setupAnimationReplacement(originalId, config)
             Anim:AdjustSpeed(0)
             Anim.TimePosition = config.timePos or 0
             Anim:AdjustSpeed(config.speed or 1)
+            
             if config.soundId then
                 local hrp = character:FindFirstChild("HumanoidRootPart")
                 if hrp then
@@ -675,7 +647,14 @@ local function setupAnimationReplacement(originalId, config)
                 end
             end
             
-            -- NOVO: Trigger VFX de ataque
+            -- NOVO: Fogo azul nas mãos (só para CONSECUTIVE PUNCHES)
+            if config.useHandFire then
+                task.spawn(function()
+                    createTemporaryHandFire(config.handFireDuration or 2)
+                end)
+            end
+            
+            -- VFX de ataque (Black Flash, Shockwave, Uppercut)
             if config.useAttackVFX and config.vfxType then
                 task.spawn(function()
                     task.wait(config.vfxDelay or 0.2)
@@ -751,7 +730,6 @@ local function onBodyVelocityAdded(bodyVelocity)
 end
 
 task.wait(1)
-setupEnergyEffects()
 
 for originalId, config in pairs(ANIMATION_REPLACEMENTS) do
     setupAnimationReplacement(originalId, config)
@@ -769,22 +747,14 @@ for _, descendant in pairs(character:GetDescendants()) do
 end
 
 humanoid.Died:Connect(function()
-    for _, group in pairs(effectGroups) do
-        if group then
-            for _, effect in pairs(group.effects) do
-                if typeof(effect) == "Instance" then effect:Destroy()
-                elseif typeof(effect) == "RBXScriptConnection" then effect:Disconnect() end
-            end
-            if group.attachment then group.attachment:Destroy() end
-        end
-    end
+    -- Limpeza não é mais necessária pois não há efeitos permanentes
 end)
 
 player.CharacterAdded:Connect(function(newCharacter)
     character = newCharacter
     humanoid = character:WaitForChild("Humanoid")
     task.wait(1)
-    setupEnergyEffects()
+    
     for originalId, config in pairs(ANIMATION_REPLACEMENTS) do
         setupAnimationReplacement(originalId, config)
     end
@@ -796,15 +766,4 @@ player.CharacterAdded:Connect(function(newCharacter)
     for _, descendant in pairs(character:GetDescendants()) do 
         onBodyVelocityAdded(descendant) 
     end
-    humanoid.Died:Connect(function()
-        for _, group in pairs(effectGroups) do
-            if group then
-                for _, effect in pairs(group.effects) do
-                    if typeof(effect) == "Instance" then effect:Destroy()
-                    elseif typeof(effect) == "RBXScriptConnection" then effect:Disconnect() end
-                end
-                if group.attachment then group.attachment:Destroy() end
-            end
-        end
-    end)
 end)
