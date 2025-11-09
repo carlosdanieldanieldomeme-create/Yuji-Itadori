@@ -488,10 +488,10 @@ function VFXManager.createCustomBlackFlash()
             vfxSource = vfxSource:FindFirstChild("vfx")
         end
         if vfxSource then
-            vfxSource = vfxSource:FindFirstChild("BlackFlashFx")
+            vfxSource = vfxSource:FindFirstChild("LastImpactFx")
         end
         if vfxSource then
-            vfxSource = vfxSource:FindFirstChild("Main")
+            vfxSource = vfxSource:FindFirstChild("Attachment")
         end
         if not vfxSource then return end
         local vfxClone = vfxSource:Clone()
