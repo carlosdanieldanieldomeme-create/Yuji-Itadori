@@ -239,69 +239,53 @@ local function updateAttackNames()
 end
 
 local function createBlackFlashNotification()
-    local screenGui = playerGui:FindFirstChild("BlackFlashNotifications")
-    if not screenGui then
-        screenGui = Instance.new("ScreenGui")
-        screenGui.Name = "BlackFlashNotifications"
-        screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-        screenGui.Parent = playerGui
-    end
-    
-    local frame = screenGui:FindFirstChild("Frame")
-    if not frame then
-        frame = Instance.new("Frame")
-        frame.Name = "Frame"
-        frame.Size = UDim2.new(0.3, 0, 0.8, 0)
-        frame.Position = UDim2.new(0.35, 0, 0.1, 0)
-        frame.BackgroundTransparency = 1
-        frame.Parent = screenGui
-        
-        local listLayout = Instance.new("UIListLayout")
-        listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        listLayout.Padding = UDim.new(0, 5)
-        listLayout.Parent = frame
-    end
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
     
     local sound = Instance.new("Sound")
     sound.SoundId = "rbxassetid://9086333748"
     sound.Volume = 0.5
-    sound.Parent = frame
+    sound.Parent = hrp
     sound:Play()
     game.Debris:AddItem(sound, 2)
     
-    local message = Instance.new("TextLabel")
-    message.Text = "BLACK FLASH"
-    message.Font = Enum.Font.GothamBold
-    message.TextSize = 24
-    message.TextColor3 = Color3.fromRGB(255, 255, 255)
-    message.TextStrokeTransparency = 0.5
-    message.TextStrokeColor3 = Color3.fromRGB(255, 0, 0)
-    message.BackgroundTransparency = 1
-    message.BorderSizePixel = 0
-    message.Size = UDim2.new(1, 0, 0, 40)
-    message.TextScaled = false
-    message.Parent = frame
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "BlackFlashBillboard"
+    billboard.Size = UDim2.new(3.9, 0, 4, 0)
+    billboard.StudsOffset = Vector3.new(-2, 4.1, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = hrp
     
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(255, 0, 0)
-    stroke.Thickness = 2
-    stroke.Transparency = 0
-    stroke.Parent = message
+    local balloon = Instance.new("ImageLabel")
+    balloon.Name = "Balloon"
+    balloon.Image = "rbxassetid://136797177442983"
+    balloon.Size = UDim2.new(1, 0, 1, 0)
+    balloon.Position = UDim2.new(0, 0, 0, 0)
+    balloon.BackgroundTransparency = 1
+    balloon.Parent = billboard
     
-    local origSize = message.TextSize
-    message.TextSize = 0
+    local blackFlashText = Instance.new("ImageLabel")
+    blackFlashText.Name = "BlackFlashText"
+    blackFlashText.Image = "rbxassetid://17702987052"
+    blackFlashText.Size = UDim2.new(0.613, 0, 0.6, 0)
+    blackFlashText.Position = UDim2.new(0.519, 0, 0.5, 0)
+    blackFlashText.AnchorPoint = Vector2.new(0.5, 0.5)
+    blackFlashText.BackgroundTransparency = 1
+    blackFlashText.Parent = balloon
+    
+    billboard.Size = UDim2.new(0, 0, 0, 0)
     
     local tweenIn = game:GetService("TweenService"):Create(
-        message,
+        billboard,
         TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        {TextSize = origSize}
+        {Size = UDim2.new(3.9, 0, 4, 0)}
     )
     tweenIn:Play()
     
     local pulseTween = game:GetService("TweenService"):Create(
-        stroke,
+        blackFlashText,
         TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-        {Transparency = 0.5}
+        {ImageTransparency = 0.3}
     )
     pulseTween:Play()
     
@@ -310,13 +294,13 @@ local function createBlackFlashNotification()
     pulseTween:Cancel()
     
     local tweenOut = game:GetService("TweenService"):Create(
-        message,
+        billboard,
         TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-        {TextSize = 0}
+        {Size = UDim2.new(0, 0, 0, 0)}
     )
     tweenOut:Play()
     
-    game:GetService("Debris"):AddItem(message, 0.3)
+    game:GetService("Debris"):AddItem(billboard, 0.3)
 end
 
 local function setupAnimationReplacement(originalId, config)
