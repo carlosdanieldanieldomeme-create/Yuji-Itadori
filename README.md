@@ -33,7 +33,7 @@ local CONFIG = {
         },
         [10471336737] = {
             skillName = "SHOVE",
-            animationId = 18179181663,
+            animationId = 16944265635,
             speed = 1,
             timePos = 0
         },
