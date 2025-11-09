@@ -349,65 +349,67 @@ local NotificationManager = {}
 function NotificationManager.createBlackFlash()
     if not validateCharacter() then return end
     
-    safeCall(function()
-        local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
-        if not hrp then return end
-        
-        local sound = Instance.new("Sound")
-        sound.SoundId = "rbxassetid://9086333748"
-        sound.Volume = 0.5
-        sound.Parent = hrp
-        sound:Play()
-        Services.Debris:AddItem(sound, 2)
-        
-        local billboard = Instance.new("BillboardGui")
-        billboard.Name = "BlackFlashBillboard"
-        billboard.Size = UDim2.new(3.9, 0, 4, 0)
-        billboard.StudsOffset = Vector3.new(-2, 4.1, 0)
-        billboard.AlwaysOnTop = true
-        billboard.Parent = hrp
-        
-        local balloon = Instance.new("ImageLabel")
-        balloon.Name = "Balloon"
-        balloon.Image = "rbxassetid://136797177442983"
-        balloon.Size = UDim2.new(1, 0, 1, 0)
-        balloon.Position = UDim2.new(0, 0, 0, 0)
-        balloon.BackgroundTransparency = 1
-        balloon.Parent = billboard
-        
-        local blackFlashText = Instance.new("ImageLabel")
-        blackFlashText.Name = "BlackFlashText"
-        blackFlashText.Image = "rbxassetid://17702987052"
-        blackFlashText.Size = UDim2.new(0.613, 0, 0.6, 0)
-        blackFlashText.Position = UDim2.new(0.519, 0, 0.5, 0)
-        blackFlashText.AnchorPoint = Vector2.new(0.5, 0.5)
-        blackFlashText.BackgroundTransparency = 1
-        blackFlashText.Parent = balloon
-        
-        billboard.Size = UDim2.new(0, 0, 0, 0)
-        
-        local tweenIn = Services.TweenService:Create(
-            billboard, 
-            TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), 
-            {Size = UDim2.new(3.9, 0, 4, 0)}
-        )
-        tweenIn:Play()
-        
-        task.spawn(function()
-            VFXManager.createCustomBlackFlash()
+    task.spawn(function()
+        safeCall(function()
+            local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
+            if not hrp then return end
+            
+            local sound = Instance.new("Sound")
+            sound.SoundId = "rbxassetid://9086333748"
+            sound.Volume = 0.5
+            sound.Parent = hrp
+            sound:Play()
+            Services.Debris:AddItem(sound, 2)
+            
+            local billboard = Instance.new("BillboardGui")
+            billboard.Name = "BlackFlashBillboard"
+            billboard.Size = UDim2.new(0, 0, 0, 0)
+            billboard.StudsOffset = Vector3.new(-2, 4.1, 0)
+            billboard.AlwaysOnTop = true
+            billboard.Parent = hrp
+            
+            local balloon = Instance.new("ImageLabel")
+            balloon.Name = "Balloon"
+            balloon.Image = "rbxassetid://136797177442983"
+            balloon.Size = UDim2.new(1, 0, 1, 0)
+            balloon.Position = UDim2.new(0, 0, 0, 0)
+            balloon.BackgroundTransparency = 1
+            balloon.Parent = billboard
+            
+            local blackFlashText = Instance.new("ImageLabel")
+            blackFlashText.Name = "BlackFlashText"
+            blackFlashText.Image = "rbxassetid://17702987052"
+            blackFlashText.Size = UDim2.new(0.613, 0, 0.6, 0)
+            blackFlashText.Position = UDim2.new(0.519, 0, 0.5, 0)
+            blackFlashText.AnchorPoint = Vector2.new(0.5, 0.5)
+            blackFlashText.BackgroundTransparency = 1
+            blackFlashText.Parent = balloon
+            
+            local tweenIn = Services.TweenService:Create(
+                billboard, 
+                TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), 
+                {Size = UDim2.new(3.9, 0, 4, 0)}
+            )
+            tweenIn:Play()
+            
+            task.spawn(function()
+                VFXManager.createCustomBlackFlash()
+            end)
+            
+            tweenIn.Completed:Wait()
+            task.wait(1.5)
+            
+            local tweenOut = Services.TweenService:Create(
+                billboard, 
+                TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), 
+                {Size = UDim2.new(0, 0, 0, 0)}
+            )
+            tweenOut:Play()
+            tweenOut.Completed:Wait()
+            
+            billboard:Destroy()
+            table.insert(PlayerData.activeEffects, billboard)
         end)
-        
-        task.wait(2)
-        
-        local tweenOut = Services.TweenService:Create(
-            billboard, 
-            TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), 
-            {Size = UDim2.new(0, 0, 0, 0)}
-        )
-        tweenOut:Play()
-        Services.Debris:AddItem(billboard, 0.3)
-        
-        table.insert(PlayerData.activeEffects, billboard)
     end)
 end
 
@@ -425,211 +427,180 @@ function VFXManager.createAdvancedEnergyEffect(hand, scale)
         local effects = {}
         scale = scale or 1
         
-        local darkFire = Instance.new("ParticleEmitter")
-        darkFire.Name = "DarkFire"
-        darkFire.Parent = attachment
-        darkFire.Texture = "rbxassetid://11534281007"
-        darkFire.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, CONFIG.COLORS.dark), 
-            ColorSequenceKeypoint.new(0.7, CONFIG.COLORS.dark), 
-            ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)
-        })
-        darkFire.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 1 * scale), 
-            NumberSequenceKeypoint.new(0.3, 2.5 * scale), 
-            NumberSequenceKeypoint.new(0.7, 2 * scale), 
-            NumberSequenceKeypoint.new(1, 0.5 * scale)
-        })
-        darkFire.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.3), 
-            NumberSequenceKeypoint.new(0.4, 0.5), 
-            NumberSequenceKeypoint.new(0.8, 0.8), 
-            NumberSequenceKeypoint.new(1, 1)
-        })
-        darkFire.Lifetime = NumberRange.new(0.6, 1)
-        darkFire.Rate = 80 * scale
-        darkFire.Speed = NumberRange.new(1, 2.5)
-        darkFire.SpreadAngle = Vector2.new(25, 25)
-        darkFire.Rotation = NumberRange.new(0, 360)
-        darkFire.RotSpeed = NumberRange.new(-80, 80)
-        darkFire.LightEmission = 0
-        darkFire.ZOffset = -0.1
-        darkFire.Acceleration = Vector3.new(0, 2, 0)
-        darkFire.Drag = 3
-        darkFire.VelocityInheritance = 0
-        darkFire.LockedToPart = true
-        darkFire.TimeScale = 1
-        darkFire.EmissionDirection = Enum.NormalId.Top
-        darkFire.WindAffectsDrag = false
-        darkFire.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
-        darkFire.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
-        darkFire.FlipbookStartRandom = false
-        darkFire.Enabled = true
-        table.insert(effects, darkFire)
+        local emitterConfigs = {
+            {
+                Name = "DarkFire",
+                Texture = "rbxassetid://11534281007",
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, CONFIG.COLORS.dark), 
+                    ColorSequenceKeypoint.new(0.7, CONFIG.COLORS.dark), 
+                    ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)
+                }),
+                Size = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 1 * scale), 
+                    NumberSequenceKeypoint.new(0.3, 2.5 * scale), 
+                    NumberSequenceKeypoint.new(0.7, 2 * scale), 
+                    NumberSequenceKeypoint.new(1, 0.5 * scale)
+                }),
+                Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.3), 
+                    NumberSequenceKeypoint.new(0.4, 0.5), 
+                    NumberSequenceKeypoint.new(0.8, 0.8), 
+                    NumberSequenceKeypoint.new(1, 1)
+                }),
+                Lifetime = NumberRange.new(0.6, 1),
+                Rate = 80 * scale,
+                Speed = NumberRange.new(1, 2.5),
+                SpreadAngle = Vector2.new(25, 25),
+                LightEmission = 0,
+                ZOffset = -0.1,
+                Acceleration = Vector3.new(0, 2, 0),
+                Drag = 3
+            },
+            {
+                Name = "EnergyCore",
+                Texture = "rbxassetid://11534281007",
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, CONFIG.COLORS.bright), 
+                    ColorSequenceKeypoint.new(0.3, CONFIG.COLORS.glow), 
+                    ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)
+                }),
+                Size = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.5 * scale), 
+                    NumberSequenceKeypoint.new(0.2, 1.5 * scale), 
+                    NumberSequenceKeypoint.new(0.6, 1.2 * scale), 
+                    NumberSequenceKeypoint.new(1, 0.3 * scale)
+                }),
+                Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0), 
+                    NumberSequenceKeypoint.new(0.3, 0.1), 
+                    NumberSequenceKeypoint.new(0.7, 0.5), 
+                    NumberSequenceKeypoint.new(1, 1)
+                }),
+                Lifetime = NumberRange.new(0.4, 0.7),
+                Rate = 120 * scale,
+                Speed = NumberRange.new(2, 4),
+                SpreadAngle = Vector2.new(15, 15),
+                LightEmission = 1,
+                LightInfluence = 0,
+                ZOffset = 0.3,
+                Acceleration = Vector3.new(0, 3, 0),
+                Drag = 2.5
+            },
+            {
+                Name = "EnergyOuter",
+                Texture = "rbxassetid://11534281007",
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, CONFIG.COLORS.primary), 
+                    ColorSequenceKeypoint.new(0.5, CONFIG.COLORS.secondary), 
+                    ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)
+                }),
+                Size = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.8 * scale), 
+                    NumberSequenceKeypoint.new(0.3, 2 * scale), 
+                    NumberSequenceKeypoint.new(0.7, 1.5 * scale), 
+                    NumberSequenceKeypoint.new(1, 0)
+                }),
+                Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.2), 
+                    NumberSequenceKeypoint.new(0.4, 0.3), 
+                    NumberSequenceKeypoint.new(0.8, 0.7), 
+                    NumberSequenceKeypoint.new(1, 1)
+                }),
+                Lifetime = NumberRange.new(0.5, 0.9),
+                Rate = 100 * scale,
+                Speed = NumberRange.new(1.5, 3),
+                SpreadAngle = Vector2.new(20, 20),
+                LightEmission = 0.9,
+                ZOffset = 0.2,
+                Acceleration = Vector3.new(0, 2.5, 0),
+                Drag = 2
+            },
+            {
+                Name = "BaseGlow",
+                Texture = "rbxassetid://11841348746",
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, CONFIG.COLORS.bright), 
+                    ColorSequenceKeypoint.new(0.5, CONFIG.COLORS.glow), 
+                    ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)
+                }),
+                Size = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 1.2 * scale), 
+                    NumberSequenceKeypoint.new(0.4, 1.8 * scale), 
+                    NumberSequenceKeypoint.new(1, 0)
+                }),
+                Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.3), 
+                    NumberSequenceKeypoint.new(0.5, 0.6), 
+                    NumberSequenceKeypoint.new(1, 1)
+                }),
+                Lifetime = NumberRange.new(0.2, 0.4),
+                Rate = 80 * scale,
+                Speed = NumberRange.new(0.5, 1.5),
+                SpreadAngle = Vector2.new(25, 25),
+                LightEmission = 1,
+                ZOffset = 0.1,
+                Acceleration = Vector3.new(0, 2, 0),
+                Drag = 1
+            },
+            {
+                Name = "EnergyWisps",
+                Texture = "rbxassetid://11841348746",
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, CONFIG.COLORS.glow), 
+                    ColorSequenceKeypoint.new(1, CONFIG.COLORS.secondary)
+                }),
+                Size = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.3 * scale), 
+                    NumberSequenceKeypoint.new(0.5, 0.6 * scale), 
+                    NumberSequenceKeypoint.new(1, 0.2 * scale)
+                }),
+                Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.2), 
+                    NumberSequenceKeypoint.new(0.6, 0.6), 
+                    NumberSequenceKeypoint.new(1, 1)
+                }),
+                Lifetime = NumberRange.new(0.6, 1),
+                Rate = 60 * scale,
+                Speed = NumberRange.new(3, 5),
+                SpreadAngle = Vector2.new(12, 12),
+                LightEmission = 1,
+                ZOffset = 0.4,
+                Acceleration = Vector3.new(0, 4, 0),
+                Drag = 1.8
+            }
+        }
         
-        local core = Instance.new("ParticleEmitter")
-        core.Name = "EnergyCore"
-        core.Parent = attachment
-        core.Texture = "rbxassetid://11534281007"
-        core.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, CONFIG.COLORS.bright), 
-            ColorSequenceKeypoint.new(0.3, CONFIG.COLORS.glow), 
-            ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)
-        })
-        core.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.5 * scale), 
-            NumberSequenceKeypoint.new(0.2, 1.5 * scale), 
-            NumberSequenceKeypoint.new(0.6, 1.2 * scale), 
-            NumberSequenceKeypoint.new(1, 0.3 * scale)
-        })
-        core.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0), 
-            NumberSequenceKeypoint.new(0.3, 0.1), 
-            NumberSequenceKeypoint.new(0.7, 0.5), 
-            NumberSequenceKeypoint.new(1, 1)
-        })
-        core.Lifetime = NumberRange.new(0.4, 0.7)
-        core.Rate = 120 * scale
-        core.Speed = NumberRange.new(2, 4)
-        core.SpreadAngle = Vector2.new(15, 15)
-        core.Rotation = NumberRange.new(0, 360)
-        core.RotSpeed = NumberRange.new(-80, 80)
-        core.LightEmission = 1
-        core.LightInfluence = 0
-        core.ZOffset = 0.3
-        core.Acceleration = Vector3.new(0, 3, 0)
-        core.Drag = 2.5
-        core.VelocityInheritance = 0
-        core.LockedToPart = true
-        core.TimeScale = 1
-        core.WindAffectsDrag = false
-        core.EmissionDirection = Enum.NormalId.Top
-        core.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
-        core.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
-        core.FlipbookStartRandom = false
-        core.Enabled = true
-        table.insert(effects, core)
-        
-        local outer = Instance.new("ParticleEmitter")
-        outer.Name = "EnergyOuter"
-        outer.Parent = attachment
-        outer.Texture = "rbxassetid://11534281007"
-        outer.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, CONFIG.COLORS.primary), 
-            ColorSequenceKeypoint.new(0.5, CONFIG.COLORS.secondary), 
-            ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)
-        })
-        outer.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.8 * scale), 
-            NumberSequenceKeypoint.new(0.3, 2 * scale), 
-            NumberSequenceKeypoint.new(0.7, 1.5 * scale), 
-            NumberSequenceKeypoint.new(1, 0)
-        })
-        outer.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.2), 
-            NumberSequenceKeypoint.new(0.4, 0.3), 
-            NumberSequenceKeypoint.new(0.8, 0.7), 
-            NumberSequenceKeypoint.new(1, 1)
-        })
-        outer.Lifetime = NumberRange.new(0.5, 0.9)
-        outer.Rate = 100 * scale
-        outer.Speed = NumberRange.new(1.5, 3)
-        outer.SpreadAngle = Vector2.new(20, 20)
-        outer.Rotation = NumberRange.new(0, 360)
-        outer.RotSpeed = NumberRange.new(-100, 100)
-        outer.LightEmission = 0.9
-        outer.ZOffset = 0.2
-        outer.Acceleration = Vector3.new(0, 2.5, 0)
-        outer.Drag = 2
-        outer.VelocityInheritance = 0
-        outer.LockedToPart = true
-        outer.TimeScale = 1
-        outer.EmissionDirection = Enum.NormalId.Top
-        outer.WindAffectsDrag = false
-        outer.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
-        outer.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
-        outer.FlipbookStartRandom = false
-        outer.Enabled = true
-        table.insert(effects, outer)
-        
-        local baseGlow = Instance.new("ParticleEmitter")
-        baseGlow.Name = "BaseGlow"
-        baseGlow.Parent = attachment
-        baseGlow.Texture = "rbxassetid://11841348746"
-        baseGlow.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, CONFIG.COLORS.bright), 
-            ColorSequenceKeypoint.new(0.5, CONFIG.COLORS.glow), 
-            ColorSequenceKeypoint.new(1, CONFIG.COLORS.primary)
-        })
-        baseGlow.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 1.2 * scale), 
-            NumberSequenceKeypoint.new(0.4, 1.8 * scale), 
-            NumberSequenceKeypoint.new(1, 0)
-        })
-        baseGlow.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.3), 
-            NumberSequenceKeypoint.new(0.5, 0.6), 
-            NumberSequenceKeypoint.new(1, 1)
-        })
-        baseGlow.Lifetime = NumberRange.new(0.2, 0.4)
-        baseGlow.Rate = 80 * scale
-        baseGlow.Speed = NumberRange.new(0.5, 1.5)
-        baseGlow.SpreadAngle = Vector2.new(25, 25)
-        baseGlow.Rotation = NumberRange.new(0, 360)
-        baseGlow.RotSpeed = NumberRange.new(-150, 150)
-        baseGlow.LightEmission = 1
-        baseGlow.ZOffset = 0.1
-        baseGlow.Acceleration = Vector3.new(0, 2, 0)
-        baseGlow.Drag = 1
-        baseGlow.VelocityInheritance = 0
-        baseGlow.LockedToPart = true
-        baseGlow.TimeScale = 1
-        baseGlow.EmissionDirection = Enum.NormalId.Top
-        baseGlow.WindAffectsDrag = false
-        baseGlow.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
-        baseGlow.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
-        baseGlow.FlipbookStartRandom = false
-        baseGlow.Enabled = true
-        table.insert(effects, baseGlow)
-        
-        local wisps = Instance.new("ParticleEmitter")
-        wisps.Name = "EnergyWisps"
-        wisps.Parent = attachment
-        wisps.Texture = "rbxassetid://11841348746"
-        wisps.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, CONFIG.COLORS.glow), 
-            ColorSequenceKeypoint.new(1, CONFIG.COLORS.secondary)
-        })
-        wisps.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.3 * scale), 
-            NumberSequenceKeypoint.new(0.5, 0.6 * scale), 
-            NumberSequenceKeypoint.new(1, 0.2 * scale)
-        })
-        wisps.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.2), 
-            NumberSequenceKeypoint.new(0.6, 0.6), 
-            NumberSequenceKeypoint.new(1, 1)
-        })
-        wisps.Lifetime = NumberRange.new(0.6, 1)
-        wisps.Rate = 60 * scale
-        wisps.Speed = NumberRange.new(3, 5)
-        wisps.SpreadAngle = Vector2.new(12, 12)
-        wisps.Rotation = NumberRange.new(0, 360)
-        wisps.RotSpeed = NumberRange.new(-200, 200)
-        wisps.LightEmission = 1
-        wisps.ZOffset = 0.4
-        wisps.Acceleration = Vector3.new(0, 4, 0)
-        wisps.Drag = 1.8
-        wisps.VelocityInheritance = 0
-        wisps.LockedToPart = true
-        wisps.TimeScale = 1
-        wisps.EmissionDirection = Enum.NormalId.Top
-        wisps.WindAffectsDrag = false
-        wisps.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
-        wisps.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
-        wisps.FlipbookStartRandom = false
-        wisps.Enabled = true
-        table.insert(effects, wisps)
+        for _, config in ipairs(emitterConfigs) do
+            local emitter = Instance.new("ParticleEmitter")
+            emitter.Name = config.Name
+            emitter.Parent = attachment
+            emitter.Texture = config.Texture
+            emitter.Color = config.Color
+            emitter.Size = config.Size
+            emitter.Transparency = config.Transparency
+            emitter.Lifetime = config.Lifetime
+            emitter.Rate = config.Rate
+            emitter.Speed = config.Speed
+            emitter.SpreadAngle = config.SpreadAngle
+            emitter.Rotation = NumberRange.new(0, 360)
+            emitter.RotSpeed = NumberRange.new(-150, 150)
+            emitter.LightEmission = config.LightEmission or 0
+            emitter.LightInfluence = config.LightInfluence or 0
+            emitter.ZOffset = config.ZOffset
+            emitter.Acceleration = config.Acceleration
+            emitter.Drag = config.Drag
+            emitter.VelocityInheritance = 0
+            emitter.LockedToPart = true
+            emitter.TimeScale = 1
+            emitter.EmissionDirection = Enum.NormalId.Top
+            emitter.WindAffectsDrag = false
+            emitter.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4
+            emitter.FlipbookMode = Enum.ParticleFlipbookMode.OneShot
+            emitter.FlipbookStartRandom = false
+            emitter.Enabled = true
+            table.insert(effects, emitter)
+        end
         
         return {attachment = attachment, effects = effects}
     end)
