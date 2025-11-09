@@ -16,9 +16,9 @@ local CONFIG = {
             useFOV = true,
             useRedLight = true,
             useBlackFlashText = true,
-            blackFlashDelay = 0.9,
+            blackFlashDelay = 0.8,
             useCustomVFX = true,
-            vfxDelay = 0.9
+            vfxDelay = 0.8
         },
         [10466974800] = {
             skillName = "CONSECUTIVE PUNCHES",
