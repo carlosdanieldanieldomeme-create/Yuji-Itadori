@@ -1,7 +1,8 @@
 local Services = {
     TweenService = game:GetService("TweenService"),
     Debris = game:GetService("Debris"),
-    Lighting = game:GetService("Lighting")
+    Lighting = game:GetService("Lighting"),
+    ReplicatedStorage = game:GetService("ReplicatedStorage")
 }
 
 local CONFIG = {
@@ -15,10 +16,8 @@ local CONFIG = {
             useFOV = true,
             useRedLight = true,
             useBlackFlashText = true,
-            useAttackVFX = true,
-            vfxDelay = 0.15,
-            vfxDuration = 0.8,
-            vfxType = "blackFlash"
+            useCustomVFX = true,
+            vfxDelay = 0.15
         },
         [10466974800] = {
             skillName = "CONSECUTIVE PUNCHES",
@@ -471,42 +470,39 @@ function VFXManager.createAdvancedHandFire(duration)
     end)
 end
 
-function VFXManager.createBlackFlash(parent, duration)
+function VFXManager.createCustomBlackFlash()
     pcall(function()
-        local attachment = Instance.new("Attachment")
-        attachment.Name = "BlackFlashAttachment"
-        attachment.Parent = parent
-        local explosion = Instance.new("ParticleEmitter")
-        explosion.Name = "BlackFlashExplosion"
-        explosion.Parent = attachment
-        explosion.Texture = "rbxassetid://11534281007"
-        explosion.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(0.3, Color3.fromRGB(255, 50, 50)), ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 0, 0))})
-        explosion.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.1, 4), NumberSequenceKeypoint.new(0.5, 3), NumberSequenceKeypoint.new(1, 0)})
-        explosion.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 0.5), NumberSequenceKeypoint.new(1, 1)})
-        explosion.Lifetime = NumberRange.new(0.4, 0.6)
-        explosion.Rate = 200
-        explosion.Speed = NumberRange.new(8, 15)
-        explosion.SpreadAngle = Vector2.new(180, 180)
-        explosion.Rotation = NumberRange.new(0, 360)
-        explosion.RotSpeed = NumberRange.new(-200, 200)
-        explosion.LightEmission = 1
-        explosion.ZOffset = 0.5
-        explosion.Enabled = true
-        local sparks = Instance.new("ParticleEmitter")
-        sparks.Name = "BlackFlashSparks"
-        sparks.Parent = attachment
-        sparks.Texture = "rbxassetid://11841348746"
-        sparks.Color = ColorSequence.new(Color3.fromRGB(255, 100, 100))
-        sparks.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 0.1)})
-        sparks.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(1, 1)})
-        sparks.Lifetime = NumberRange.new(0.3, 0.5)
-        sparks.Rate = 150
-        sparks.Speed = NumberRange.new(15, 25)
-        sparks.SpreadAngle = Vector2.new(90, 90)
-        sparks.LightEmission = 1
-        sparks.Enabled = true
-        task.wait(duration)
-        attachment:Destroy()
+        local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+        local vfxSource = Services.ReplicatedStorage:FindFirstChild("Emotes")
+        if vfxSource then
+            vfxSource = vfxSource:FindFirstChild("VFX")
+        end
+        if vfxSource then
+            vfxSource = vfxSource:FindFirstChild("VfxMods")
+        end
+        if vfxSource then
+            vfxSource = vfxSource:FindFirstChild("Flasher")
+        end
+        if vfxSource then
+            vfxSource = vfxSource:FindFirstChild("vfx")
+        end
+        if vfxSource then
+            vfxSource = vfxSource:FindFirstChild("BlackFlashFx")
+        end
+        if vfxSource then
+            vfxSource = vfxSource:FindFirstChild("Main")
+        end
+        if not vfxSource then return end
+        local vfxClone = vfxSource:Clone()
+        vfxClone.Parent = hrp
+        for _, child in ipairs(vfxClone:GetChildren()) do
+            if child:IsA("ParticleEmitter") then
+                child:Emit(15)
+                child.Enabled = true
+            end
+        end
+        Services.Debris:AddItem(vfxClone, 3)
     end)
 end
 
@@ -515,7 +511,7 @@ function VFXManager.trigger(vfxType, duration)
         local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
         if vfxType == "blackFlash" then
-            VFXManager.createBlackFlash(hrp, duration)
+            VFXManager.createCustomBlackFlash()
         end
     end)
 end
@@ -611,10 +607,10 @@ function AnimationManager.setupReplacement(originalId, config)
                     VFXManager.createAdvancedHandFire(config.handFireDuration or 2)
                 end)
             end
-            if config.useAttackVFX and config.vfxType then
+            if config.useCustomVFX then
                 task.spawn(function()
                     task.wait(config.vfxDelay or 0.2)
-                    VFXManager.trigger(config.vfxType, config.vfxDuration or 1)
+                    VFXManager.trigger("blackFlash", 1)
                 end)
             end
             if config.useFOV then
