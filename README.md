@@ -505,12 +505,27 @@ function VFXManager.createCustomBlackFlash()
                 
                 child.Lifetime = NumberRange.new(1, 1.8)
                 
-                child.Size = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 0),
-                    NumberSequenceKeypoint.new(0.2, 1),
-                    NumberSequenceKeypoint.new(0.8, 0.8),
-                    NumberSequenceKeypoint.new(1, 0)
-                })
+                -- AUMENTAR O TAMANHO AQUI
+                local originalSize = child.Size
+                local multiplier = 3 -- Multiplica o tamanho por 3
+                
+                local newKeypoints = {}
+                for i, keypoint in ipairs(originalSize.Keypoints) do
+                    table.insert(newKeypoints, NumberSequenceKeypoint.new(
+                        keypoint.Time,
+                        keypoint.Value * multiplier,
+                        keypoint.Envelope * multiplier
+                    ))
+                end
+                child.Size = NumberSequence.new(newKeypoints)
+                
+                -- OU definir tamanho manual (mais fácil)
+                -- child.Size = NumberSequence.new({
+                --     NumberSequenceKeypoint.new(0, 0),
+                --     NumberSequenceKeypoint.new(0.2, 5),    -- Tamanho máximo 5
+                --     NumberSequenceKeypoint.new(0.8, 4),
+                --     NumberSequenceKeypoint.new(1, 0)
+                -- })
             end
         end
         
@@ -528,7 +543,6 @@ function VFXManager.createCustomBlackFlash()
         end)
     end)
 end
-
 function VFXManager.trigger(vfxType, duration)
     pcall(function()
         local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
