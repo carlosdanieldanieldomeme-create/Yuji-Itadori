@@ -469,33 +469,30 @@ function VFXManager.createAdvancedHandFire(duration, includeClones)
         
         if includeClones then
             task.spawn(function()
-                local barrageBind = PlayerData.character:WaitForChild("Barrage", 5)
-                if barrageBind then
-                    local thrown = workspace:WaitForChild("Thrown", 5)
-                    if thrown then
-                        for attempt = 1, 30 do
-                            for _, modelo in ipairs(thrown:GetChildren()) do
-                                if modelo:IsA("Model") and modelo.Name == "Model" then
-                                    local leftArm = modelo:FindFirstChild("Left Arm")
-                                    local rightArm = modelo:FindFirstChild("Right Arm")
-                                    
-                                    if leftArm and leftArm:IsA("BasePart") then
-                                        local key = string.format("thrown_left_%s_%d", modelo:GetDebugId(), tick())
-                                        if not effectGroups[key] then
-                                            effectGroups[key] = VFXManager.createAdvancedEnergyEffect(leftArm, 0.8)
-                                        end
+                local thrown = workspace:FindFirstChild("Thrown")
+                if thrown then
+                    for attempt = 1, 30 do
+                        for _, modelo in ipairs(thrown:GetChildren()) do
+                            if modelo:IsA("Model") and modelo.Name == "Model" then
+                                local leftArm = modelo:FindFirstChild("Left Arm")
+                                local rightArm = modelo:FindFirstChild("Right Arm")
+                                
+                                if leftArm and leftArm:IsA("BasePart") then
+                                    local key = string.format("thrown_left_%s_%d", modelo:GetDebugId(), tick())
+                                    if not effectGroups[key] then
+                                        effectGroups[key] = VFXManager.createAdvancedEnergyEffect(leftArm, 0.8)
                                     end
-                                    
-                                    if rightArm and rightArm:IsA("BasePart") then
-                                        local key = string.format("thrown_right_%s_%d", modelo:GetDebugId(), tick())
-                                        if not effectGroups[key] then
-                                            effectGroups[key] = VFXManager.createAdvancedEnergyEffect(rightArm, 0.8)
-                                        end
+                                end
+                                
+                                if rightArm and rightArm:IsA("BasePart") then
+                                    local key = string.format("thrown_right_%s_%d", modelo:GetDebugId(), tick())
+                                    if not effectGroups[key] then
+                                        effectGroups[key] = VFXManager.createAdvancedEnergyEffect(rightArm, 0.8)
                                     end
                                 end
                             end
-                            task.wait(0.05)
                         end
+                        task.wait(0.05)
                     end
                 end
             end)
