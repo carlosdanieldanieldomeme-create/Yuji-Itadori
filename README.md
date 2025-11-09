@@ -184,8 +184,14 @@ end
 function CursedFireManager.add(buttonBase)
     if not buttonBase then return end
     CursedFireManager.remove(buttonBase)
-    local success = pcall(function()
-        local kj = PlayerData.playerGui.Hotbar.Backpack.LocalScript:FindFirstChild("Flipbook")
+    pcall(function()
+        local hotbar = PlayerData.playerGui:FindFirstChild("Hotbar")
+        if not hotbar then return end
+        local backpack = hotbar:FindFirstChild("Backpack")
+        if not backpack then return end
+        local localScript = backpack:FindFirstChild("LocalScript")
+        if not localScript then return end
+        local kj = localScript:FindFirstChild("Flipbook")
         if not kj then return end
         local clone = kj:Clone()
         local group = Instance.new("Folder")
@@ -469,12 +475,25 @@ function VFXManager.createAdvancedHandFire(duration)
         end
     end)
 end
+
 function VFXManager.createCustomBlackFlash()
     pcall(function()
         local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
         
-        local vfxSource = Services.ReplicatedStorage.Emotes.VFX.VfxMods.Flasher.vfx.LastImpactFx.Attachment
+        local vfxSource = Services.ReplicatedStorage:FindFirstChild("Emotes")
+        if not vfxSource then return end
+        vfxSource = vfxSource:FindFirstChild("VFX")
+        if not vfxSource then return end
+        vfxSource = vfxSource:FindFirstChild("VfxMods")
+        if not vfxSource then return end
+        vfxSource = vfxSource:FindFirstChild("Flasher")
+        if not vfxSource then return end
+        vfxSource = vfxSource:FindFirstChild("vfx")
+        if not vfxSource then return end
+        vfxSource = vfxSource:FindFirstChild("LastImpactFx")
+        if not vfxSource then return end
+        vfxSource = vfxSource:FindFirstChild("Attachment")
         if not vfxSource then return end
         
         local vfxClone = vfxSource:Clone()
@@ -536,7 +555,7 @@ function VFXManager.createCustomBlackFlash()
         Services.Debris:AddItem(vfxClone, 0.35)
     end)
 end
-createBlackFlash()
+
 function VFXManager.trigger(vfxType, duration)
     pcall(function()
         local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
