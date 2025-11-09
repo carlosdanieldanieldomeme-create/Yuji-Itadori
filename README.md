@@ -472,18 +472,32 @@ function VFXManager.createAdvancedHandFire(duration, includeClones)
                 local barrageBind = PlayerData.character:WaitForChild("Barrage", 5)
                 
                 if barrageBind then
-                    for attempt = 1, 20 do
-                        for _, child in pairs(PlayerData.character:GetDescendants()) do
-                            if child.Name == "BarrageBind" or child.Name:match("Barrage") or child.Name:match("Clone") then
-                                for _, limb in pairs(child:GetDescendants()) do
-                                    if limb.Name == "Left Arm" or limb.Name == "Right Arm" then
-                                        local key = "barrage_" .. limb.Name .. "_" .. tostring(math.random(1000))
-                                        effectGroups[key] = VFXManager.createAdvancedEnergyEffect(limb, 0.8)
+                    local thrown = workspace:WaitForChild("Thrown", 5)
+                    
+                    if thrown then
+                        for attempt = 1, 25 do
+                            for _, model in pairs(thrown:GetChildren()) do
+                                if model:IsA("Model") then
+                                    local leftArm = model:FindFirstChild("Left Arm")
+                                    local rightArm = model:FindFirstChild("Right Arm")
+                                    
+                                    if leftArm and leftArm:IsA("BasePart") then
+                                        local key = "thrown_left_" .. model.Name .. "_" .. tostring(math.random(10000))
+                                        if not effectGroups[key] then
+                                            effectGroups[key] = VFXManager.createAdvancedEnergyEffect(leftArm, 0.8)
+                                        end
+                                    end
+                                    
+                                    if rightArm and rightArm:IsA("BasePart") then
+                                        local key = "thrown_right_" .. model.Name .. "_" .. tostring(math.random(10000))
+                                        if not effectGroups[key] then
+                                            effectGroups[key] = VFXManager.createAdvancedEnergyEffect(rightArm, 0.8)
+                                        end
                                     end
                                 end
                             end
+                            task.wait(0.05)
                         end
-                        task.wait(0.1)
                     end
                 end
             end)
@@ -528,7 +542,6 @@ function VFXManager.createAdvancedHandFire(duration, includeClones)
         end
     end)
 end
-
 function VFXManager.createCustomBlackFlash()
     pcall(function()
         local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
