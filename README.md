@@ -8,7 +8,7 @@ local Services = {
 local CONFIG = {
     ANIMATION_REPLACEMENTS = {
         [10468665991] = {
-            skillName = "NORMAL PUNCH",
+            skillName = "NORMAL PUNCH", 
             animationId = 17186602996,
             speed = 1,
             timePos = 0,
@@ -16,8 +16,7 @@ local CONFIG = {
             useFOV = true,
             useRedLight = true,
             useBlackFlashText = true,
-            useCustomVFX = true,
-            vfxDelay = 0.15
+            useCustomVFX = true
         },
         [10466974800] = {
             skillName = "CONSECUTIVE PUNCHES",
@@ -298,6 +297,9 @@ function NotificationManager.createBlackFlash()
         billboard.Size = UDim2.new(0, 0, 0, 0)
         local tweenIn = Services.TweenService:Create(billboard, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(3.9, 0, 4, 0)})
         tweenIn:Play()
+        task.spawn(function()
+            VFXManager.createCustomBlackFlash()
+        end)
         task.wait(2)
         local tweenOut = Services.TweenService:Create(billboard, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
         tweenOut:Play()
