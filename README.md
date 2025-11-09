@@ -481,7 +481,6 @@ function VFXManager.createCustomBlackFlash()
         local vfxClone = vfxSource:Clone()
         vfxClone.Parent = hrp
         
-        -- ADICIONAR POSIÇÃO AQUI
         if vfxClone:IsA("Attachment") then
             vfxClone.Position = Vector3.new(0, 1, -2)
             vfxClone.Orientation = Vector3.new(0, 0, 0)
@@ -489,12 +488,53 @@ function VFXManager.createCustomBlackFlash()
         
         for _, child in ipairs(vfxClone:GetChildren()) do
             if child:IsA("ParticleEmitter") then
-                child:Emit(15)
+                local originalSpeed = child.Speed
+                local originalRate = child.Rate
+                
+                child.Speed = NumberRange.new(originalSpeed.Min * 2.5, originalSpeed.Max * 2.5)
+                child.Lifetime = NumberRange.new(0.1, 0.3)
+                child.Rate = originalRate * 3
+                
+                if child.Size then
+                    local keypoints = child.Size.Keypoints
+                    local newKeypoints = {}
+                    for i, kp in ipairs(keypoints) do
+                        table.insert(newKeypoints, NumberSequenceKeypoint.new(kp.Time, kp.Value * 1.5, kp.Envelope))
+                    end
+                    child.Size = NumberSequence.new(newKeypoints)
+                end
+                
+                child.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0),
+                    NumberSequenceKeypoint.new(0.3, 0.3),
+                    NumberSequenceKeypoint.new(1, 1)
+                })
+                
+                child:Emit(40)
                 child.Enabled = true
+                task.wait(0.05)
+                child.Enabled = false
             end
         end
         
-        Services.Debris:AddItem(vfxClone, 3)
+        task.spawn(function()
+            local camera = workspace.CurrentCamera
+            if camera then
+                local originalCFrame = camera.CFrame
+                for i = 1, 5 do
+                    local shake = CFrame.new(
+                        math.random(-20, 20) / 100,
+                        math.random(-20, 20) / 100,
+                        math.random(-20, 20) / 100
+                    )
+                    camera.CFrame = originalCFrame * shake
+                    task.wait(0.02)
+                end
+                camera.CFrame = originalCFrame
+            end
+        end)
+        
+        Services.Debris:AddItem(vfxClone, 0.5)
     end)
 end
 function VFXManager.trigger(vfxType, duration)
