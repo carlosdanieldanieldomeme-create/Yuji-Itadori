@@ -265,6 +265,7 @@ local NotificationManager = {}
 
 function NotificationManager.createBlackFlash()
     pcall(function()
+        task.wait(1)
         local hrp = PlayerData.character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
         local sound = Instance.new("Sound")
