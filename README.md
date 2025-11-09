@@ -120,9 +120,9 @@ local CONFIG = {
     
     ATTACK_NAMES = {
         ["Normal Punch"] = "Black Flash",
-        ["Consecutive Punches"] = "Divergent Dam Combo",
-        ["Shove"] = "Black Flash is expelled",
-        ["Uppercut"] = "Divergent Punch"
+        ["Consecutive Punches"] = "Barragem Divergent",
+        ["Shove"] = "Divergent Scan",
+        ["Uppercut"] = "Storm Kick Black Flash"
     },
     
     ULTIMATE_NAMES = {},
